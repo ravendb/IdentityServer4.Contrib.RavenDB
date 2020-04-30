@@ -66,9 +66,31 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             return result;
         }
 
-        public Task<Resources> GetAllResourcesAsync()
+        public virtual async Task<Resources> GetAllResourcesAsync()
         {
-            throw new NotImplementedException();
+            var identity = Session
+                .Query<IdentityServer4.RavenDB.Entities.IdentityResource>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
+
+            var apis = Session
+                .Query<IdentityServer4.RavenDB.Entities.ApiResource>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
+
+            var scopes = Session
+                .Query<IdentityServer4.RavenDB.Entities.ApiScope>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
+
+            var result = new Resources(
+                (await identity.ToArrayAsync()).Select(x => x.ToModel()),
+                (await apis.ToArrayAsync()).Select(x => x.ToModel()),
+                (await scopes.ToArrayAsync()).Select(x => x.ToModel())
+            );
+
+            Logger.LogDebug("Found {scopes} as all scopes, and {apis} as API resources",
+                result.IdentityResources.Select(x => x.Name).Union(result.ApiScopes.Select(x => x.Name)),
+                result.ApiResources.Select(x => x.Name));
+
+            return result;
         }
     }
 }
