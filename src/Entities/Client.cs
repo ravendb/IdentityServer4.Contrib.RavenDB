@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using IdentityServer4.Models;
+using ClientClaim = IdentityServer4.RavenDB.Storage.Entities.ClientClaim;
+using Secret = IdentityServer4.RavenDB.Storage.Entities.Secret;
 
-namespace IdentityServer4.RavenDB.Entities
+namespace IdentityServer4.RavenDB.Storage.Entities
 {
     public class Client
     {

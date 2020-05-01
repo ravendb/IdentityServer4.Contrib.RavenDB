@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using IdentityServer4.RavenDB.Entities;
+using IdentityServer4.RavenDB.Storage.Entities;
 
-namespace IdentityServer4.RavenDB.Mappers
+namespace IdentityServer4.RavenDB.Storage.Mappers
 {
     public static class ApiResourceMappers
     {

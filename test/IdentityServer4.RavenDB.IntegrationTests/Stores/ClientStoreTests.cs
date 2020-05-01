@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using IdentityModel;
 using IdentityServer4.Models;
-using IdentityServer4.RavenDB.Mappers;
+using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
 using Xunit;
 

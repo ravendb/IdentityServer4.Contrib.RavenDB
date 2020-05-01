@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
-using IdentityServer4.RavenDB.Mappers;
+using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.Stores;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
@@ -69,15 +69,15 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         public virtual async Task<Resources> GetAllResourcesAsync()
         {
             var identity = Session
-                .Query<IdentityServer4.RavenDB.Entities.IdentityResource>()
+                .Query<Entities.IdentityResource>()
                 .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
 
             var apis = Session
-                .Query<IdentityServer4.RavenDB.Entities.ApiResource>()
+                .Query<Entities.ApiResource>()
                 .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
 
             var scopes = Session
-                .Query<IdentityServer4.RavenDB.Entities.ApiScope>()
+                .Query<Entities.ApiScope>()
                 .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
 
             var result = new Resources(

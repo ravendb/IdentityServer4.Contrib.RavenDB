@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
 
-namespace IdentityServer4.RavenDB.Stores
+namespace IdentityServer4.RavenDB.Storage.Stores
 {
     /// <summary>
     /// Implementation of IDeviceFlowStore that uses RavenDB.

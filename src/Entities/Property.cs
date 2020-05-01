@@ -1,4 +1,4 @@
-﻿namespace IdentityServer4.RavenDB.Entities
+﻿namespace IdentityServer4.RavenDB.Storage.Entities
 {
     public class Property
     {

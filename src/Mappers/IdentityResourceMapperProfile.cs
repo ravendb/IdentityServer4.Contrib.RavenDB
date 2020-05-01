@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
+using IdentityServer4.RavenDB.Storage.Entities;
 
-namespace IdentityServer4.RavenDB.Mappers
+namespace IdentityServer4.RavenDB.Storage.Mappers
 {
     /// <summary>
     /// Defines entity/model mapping for identity resources.
@@ -13,7 +14,7 @@ namespace IdentityServer4.RavenDB.Mappers
         /// </summary>
         public IdentityResourceMapperProfile()
         {
-            CreateMap<Entities.IdentityResource, Models.IdentityResource>(MemberList.Destination)
+            CreateMap<IdentityResource, Models.IdentityResource>(MemberList.Destination)
                 .ConstructUsing(src => new Models.IdentityResource())
                 .ReverseMap();
         }
