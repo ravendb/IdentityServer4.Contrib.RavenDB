@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
+using Microsoft.AspNetCore.Identity;
 using Xunit;
 
 namespace IdentityServer4.RavenDB.IntegrationTests.Stores
@@ -22,6 +24,31 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 Expiration = new DateTime(2016, 08, 31),
                 Data = Guid.NewGuid().ToString()
             };
+        }
+
+        [Fact]
+        public async Task GetAsync_WithSubAndTypeAndPersistedGrantExists_ExpectPersistedGrantReturned()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var persistedGrant = CreateTestObject();
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(persistedGrant.ToEntity());
+                    session.SaveChanges();
+                }
+
+                IList<PersistedGrant> foundPersistedGrants;
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
+                    foundPersistedGrants = (await store.GetAllAsync(persistedGrant.SubjectId)).ToList();
+                }
+
+                Assert.NotNull(foundPersistedGrants);
+                Assert.NotEmpty(foundPersistedGrants);
+            }
         }
 
         [Fact]

@@ -63,7 +63,16 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
         public virtual async Task<IEnumerable<PersistedGrant>> GetAllAsync(string subjectId)
         {
-            throw new NotImplementedException();
+            var persistedGrants = await Session.Query<Entities.PersistedGrant>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+                .Where(x => x.SubjectId == subjectId)
+                .ToListAsync();
+
+            var model = persistedGrants.Select(x => x.ToModel());
+
+            Logger.LogDebug("{persistedGrantCount} persisted grants found for {subjectId}", persistedGrants.Count, subjectId);
+
+            return model;
         }
 
         public virtual async Task RemoveAsync(string key)
