@@ -43,6 +43,9 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     await store.StoreAsync(persistedGrant);
                 }
 
+                WaitForIndexing(ravenStore);
+                WaitForUserToContinueTheTest(ravenStore);
+
                 using (var session = ravenStore.OpenSession())
                 {
                     var foundGrant = session.Query<PersistedGrant>().FirstOrDefault(x => x.Key == persistedGrant.Key);
