@@ -6,7 +6,6 @@ using IdentityModel;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
-using Microsoft.AspNetCore.Identity;
 using Xunit;
 
 namespace IdentityServer4.RavenDB.IntegrationTests.Stores
