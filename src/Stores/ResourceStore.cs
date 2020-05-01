@@ -33,9 +33,31 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
+        /// <summary>
+        /// Gets scopes by scope name.
+        /// </summary>
+        /// <param name="scopeNames"></param>
+        /// <returns></returns>
+        public virtual async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
         {
-            throw new NotImplementedException();
+            if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
+
+            var query = Session.Query<Entities.ApiScope>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+                .Where(apiScope => apiScope.Name.In(scopeNames));
+
+            ApiScope[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
+
+            if (result.Any())
+            {
+                Logger.LogDebug("Found {scopes} scopes in database", result.Select(x => x.Name));
+            }
+            else
+            {
+                Logger.LogDebug("Did not find {scopes} scopes in database", scopeNames);
+            }
+
+            return result;
         }
 
         public Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
@@ -66,6 +88,10 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             return result;
         }
 
+        /// <summary>
+        /// Gets all resources.
+        /// </summary>
+        /// <returns></returns>
         public virtual async Task<Resources> GetAllResourcesAsync()
         {
             var identity = Session

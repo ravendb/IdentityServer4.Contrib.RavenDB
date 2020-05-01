@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using IdentityModel;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
+using Microsoft.AspNetCore.Identity;
 using Xunit;
 
 namespace IdentityServer4.RavenDB.IntegrationTests.Stores
@@ -53,6 +55,36 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     Guid.NewGuid().ToString(),
                 }
             };
+        }
+
+        [Fact]
+        public async Task FindApiScopesByNameAsync_WhenResourcesExist_ExpectOnlyRequestedReturned()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var resource = CreateApiScopeTestResource();
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(resource.ToEntity());
+                    session.Store(CreateApiScopeTestResource().ToEntity());
+                    session.SaveChanges();
+                }
+
+                IList<ApiScope> resources;
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new ResourceStore(session, FakeLogger<ResourceStore>.Create());
+                    resources = (await store.FindApiScopesByNameAsync(new List<string>
+                    {
+                        resource.Name
+                    })).ToList();
+                }
+
+                Assert.NotNull(resources);
+                Assert.NotEmpty(resources);
+                Assert.NotNull(resources.Single(x => x.Name == resource.Name));
+            }
         }
 
         [Fact]
