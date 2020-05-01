@@ -58,6 +58,37 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         }
 
         [Fact]
+        public async Task FindIdentityResourcesByScopeNameAsync_WhenResourcesExist_ExpectOnlyRequestedReturned()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var resource = CreateIdentityTestResource();
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(resource.ToEntity());
+                    session.Store(CreateIdentityTestResource().ToEntity());
+                    session.SaveChanges();
+                }
+
+                IList<IdentityResource> resources;
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new ResourceStore(session, FakeLogger<ResourceStore>.Create());
+                    resources = (await store.FindIdentityResourcesByScopeNameAsync(new List<string>
+                    {
+                        resource.Name
+                    })).ToList();
+                }
+
+                Assert.NotNull(resources);
+                Assert.NotEmpty(resources);
+                Assert.NotNull(resources.Single(x => x.Name == resource.Name));
+            }
+
+        }
+
+        [Fact]
         public async Task FindApiScopesByNameAsync_WhenResourceExists_ExpectResourceAndCollectionsReturned()
         {
             using (var ravenStore = GetDocumentStore())

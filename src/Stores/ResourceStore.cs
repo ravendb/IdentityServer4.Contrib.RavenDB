@@ -28,9 +28,31 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             Logger = logger;
         }
 
-        public Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
+        /// <summary>
+        /// Gets identity resources by scope name.
+        /// </summary>
+        /// <param name="scopeNames"></param>
+        /// <returns></returns>
+        public virtual async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
         {
-            throw new NotImplementedException();
+            if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
+
+            var query = Session.Query<Entities.IdentityResource>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+                .Where(identityResource => identityResource.Name.In(scopeNames));
+
+            IdentityResource[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
+
+            if (result.Any())
+            {
+                Logger.LogDebug("Found {scopes} identity scopes in database", result.Select(x => x.Name));
+            }
+            else
+            {
+                Logger.LogDebug("Did not find {scopes} identity scopes in database", scopeNames);
+            }
+
+            return result;
         }
 
         /// <summary>
