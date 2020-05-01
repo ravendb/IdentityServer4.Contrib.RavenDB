@@ -58,6 +58,38 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         }
 
         [Fact]
+        public async Task FindApiResourcesByScopeNameAsync_WhenResourcesExist_ExpectResourcesReturned()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var testApiResource = CreateApiResourceTestResource();
+                var testApiScope = CreateApiScopeTestResource();
+                testApiResource.Scopes.Add(testApiScope.Name);
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(testApiResource.ToEntity());
+                    session.Store(testApiScope.ToEntity());
+                    session.SaveChanges();
+                }
+
+                IEnumerable<ApiResource> resources;
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new ResourceStore(session, FakeLogger<ResourceStore>.Create());
+                    resources = await store.FindApiResourcesByScopeNameAsync(new List<string>
+                    {
+                        testApiScope.Name
+                    });
+                }
+
+                Assert.NotNull(resources);
+                Assert.NotEmpty(resources);
+                Assert.NotNull(resources.Single(x => x.Name == testApiResource.Name));
+            }
+        }
+
+        [Fact]
         public async Task FindApiResourcesByScopeNameAsync_WhenResourcesExist_ExpectOnlyResourcesRequestedReturned()
         {
             using (var ravenStore = GetDocumentStore())
@@ -82,7 +114,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 using (var session = ravenStore.OpenAsyncSession())
                 {
                     var store = new ResourceStore(session, FakeLogger<ResourceStore>.Create());
-                    resources = await store.FindApiResourcesByScopeNameAsync(new[] {testApiScope.Name});
+                    resources = await store.FindApiResourcesByScopeNameAsync(new[] { testApiScope.Name });
                 }
 
                 Assert.NotNull(resources);
