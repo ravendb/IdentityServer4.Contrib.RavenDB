@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.Mappers;
@@ -75,9 +76,28 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             throw new NotImplementedException();
         }
 
-        public Task RemoveAllAsync(string subjectId, string clientId, string type)
+        public virtual async Task RemoveAllAsync(string subjectId, string clientId, string type)
         {
-            throw new NotImplementedException();
+            var persistedGrants = await Session.Query<Entities.PersistedGrant>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+                .Where(x => x.SubjectId == subjectId && x.ClientId == clientId)
+                .ToListAsync();
+
+            Logger.LogDebug("removing {persistedGrantCount} persisted grants from database for subject {subjectId}, clientId {clientId}", persistedGrants.Count, subjectId, clientId);
+
+            foreach (var persistedGrant in persistedGrants)
+            {
+                Session.Delete(persistedGrant);
+            }
+
+            try
+            {
+                await Session.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogInformation("removing {persistedGrantCount} persisted grants from database for subject {subjectId}, clientId {clientId}: {error}", persistedGrants.Count, subjectId, clientId, ex.Message);
+            }
         }
     }
 }

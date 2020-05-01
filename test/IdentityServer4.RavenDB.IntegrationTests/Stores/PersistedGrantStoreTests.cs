@@ -25,6 +25,36 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         }
 
         [Fact]
+        public async Task RemoveAsync_WhenSubIdClientIdAndTypeOfExistingReceived_ExpectGrantDeleted()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var persistedGrant = CreateTestObject();
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(persistedGrant.ToEntity());
+                    session.SaveChanges();
+                }
+
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
+                    await store.RemoveAllAsync(persistedGrant.SubjectId, persistedGrant.ClientId, persistedGrant.Type);
+                }
+
+                WaitForIndexing(ravenStore);
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    var foundGrant = session.Query<PersistedGrant>()
+                        .FirstOrDefault(x => x.Key == persistedGrant.Key);
+                    Assert.Null(foundGrant);
+                }
+            }
+        }
+
+        [Fact]
         public async Task Store_should_create_new_record_if_key_does_not_exist()
         {
             using (var ravenStore = GetDocumentStore())
@@ -48,7 +78,8 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 using (var session = ravenStore.OpenSession())
                 {
-                    var foundGrant = session.Query<PersistedGrant>().FirstOrDefault(x => x.Key == persistedGrant.Key);
+                    var foundGrant = session.Query<PersistedGrant>()
+                        .FirstOrDefault(x => x.Key == persistedGrant.Key);
                     Assert.NotNull(foundGrant);
                 }
             }
