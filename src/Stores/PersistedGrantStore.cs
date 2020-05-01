@@ -58,7 +58,15 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
         public virtual async Task<PersistedGrant> GetAsync(string key)
         {
-            throw new NotImplementedException();
+            var persistedGrant = await Session.Query<Entities.PersistedGrant>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+                .FirstOrDefaultAsync(x => x.Key == key);
+            
+            var model = persistedGrant?.ToModel();
+
+            Logger.LogDebug("{persistedGrantKey} found in database: {persistedGrantKeyFound}", key, model != null);
+
+            return model;
         }
 
         public virtual async Task<IEnumerable<PersistedGrant>> GetAllAsync(string subjectId)

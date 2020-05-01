@@ -27,6 +27,30 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         }
 
         [Fact]
+        public async Task GetAsync_WithKeyAndPersistedGrantExists_ExpectPersistedGrantReturned()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var persistedGrant = CreateTestObject();
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(persistedGrant.ToEntity());
+                    session.SaveChanges();
+                }
+
+                PersistedGrant foundPersistedGrant;
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
+                    foundPersistedGrant = await store.GetAsync(persistedGrant.Key);
+                }
+
+                Assert.NotNull(foundPersistedGrant);
+            }
+        }
+
+        [Fact]
         public async Task GetAsync_WithSubAndTypeAndPersistedGrantExists_ExpectPersistedGrantReturned()
         {
             using (var ravenStore = GetDocumentStore())
