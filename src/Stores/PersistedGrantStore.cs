@@ -56,19 +56,41 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             }
         }
 
-        public Task<PersistedGrant> GetAsync(string key)
+        public virtual async Task<PersistedGrant> GetAsync(string key)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<PersistedGrant>> GetAllAsync(string subjectId)
+        public virtual async Task<IEnumerable<PersistedGrant>> GetAllAsync(string subjectId)
         {
             throw new NotImplementedException();
         }
 
-        public Task RemoveAsync(string key)
+        public virtual async Task RemoveAsync(string key)
         {
-            throw new NotImplementedException();
+            var persistedGrant = await Session.Query<Entities.PersistedGrant>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+                .FirstOrDefaultAsync(x => x.Key == key);
+
+            if (persistedGrant != null)
+            {
+                Logger.LogDebug("removing {persistedGrantKey} persisted grant from database", key);
+
+                Session.Delete(persistedGrant);
+
+                try
+                {
+                    await Session.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogInformation("exception removing {persistedGrantKey} persisted grant from database: {error}", key, ex.Message);
+                }
+            }
+            else
+            {
+                Logger.LogDebug("no {persistedGrantKey} persisted grant found in database", key);
+            }
         }
 
         public virtual async Task RemoveAllAsync(string subjectId, string clientId)

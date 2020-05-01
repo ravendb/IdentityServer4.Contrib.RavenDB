@@ -25,6 +25,36 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         }
 
         [Fact]
+        public async Task RemoveAsync_WhenKeyOfExistingReceived_ExpectGrantDeleted()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var persistedGrant = CreateTestObject();
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(persistedGrant.ToEntity());
+                    session.SaveChanges();
+                }
+
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
+                    await store.RemoveAsync(persistedGrant.Key);
+                }
+
+                WaitForIndexing(ravenStore);
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    var foundGrant = session.Query<PersistedGrant>()
+                        .FirstOrDefault(x => x.Key == persistedGrant.Key);
+                    Assert.Null(foundGrant);
+                }
+            }
+        }
+
+        [Fact]
         public async Task RemoveAsync_WhenSubIdAndClientIdOfExistingReceived_ExpectGrantDeleted()
         {
             using (var ravenStore = GetDocumentStore())
