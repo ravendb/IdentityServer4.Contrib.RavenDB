@@ -36,7 +36,13 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
         public virtual async Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data)
         {
-            throw new NotImplementedException();
+            var device = await this.FindByDeviceCodeAsync(deviceCode);
+            if (device != null)
+                throw new Exception($"device code {deviceCode} is already registered");
+
+            await Session.StoreAsync(ToEntity(data, deviceCode, userCode));
+
+            await Session.SaveChangesAsync();
         }
 
         public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode)
