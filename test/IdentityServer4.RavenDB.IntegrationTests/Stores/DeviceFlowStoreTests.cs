@@ -17,6 +17,73 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
     {
         private readonly IPersistentGrantSerializer serializer = new PersistentGrantSerializer();
 
+        /*
+        public async Task StoreDeviceAuthorizationAsync_WhenSuccessful_ExpectDeviceCodeAndUserCodeStored(DbContextOptions<PersistedGrantDbContext> options)
+        {
+            var deviceCode = Guid.NewGuid().ToString();
+            var userCode = Guid.NewGuid().ToString();
+            var data = new DeviceCode
+            {
+                ClientId = Guid.NewGuid().ToString(),
+                CreationTime = DateTime.UtcNow,
+                Lifetime = 300
+            };
+
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
+            {
+                var store = new DeviceFlowStore(context, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create());
+                await store.StoreDeviceAuthorizationAsync(deviceCode, userCode, data);
+            }
+
+            using (var context = new PersistedGrantDbContext(options, StoreOptions))
+            {
+                var foundDeviceFlowCodes = context.DeviceFlowCodes.FirstOrDefault(x => x.DeviceCode == deviceCode);
+
+                foundDeviceFlowCodes.Should().NotBeNull();
+                foundDeviceFlowCodes?.DeviceCode.Should().Be(deviceCode);
+                foundDeviceFlowCodes?.UserCode.Should().Be(userCode);
+            }
+        }
+        */
+
+        [Fact]
+        public async Task StoreDeviceAuthorizationAsync_WhenSuccessful_ExpectDataStored()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var deviceCode = Guid.NewGuid().ToString();
+                var userCode = Guid.NewGuid().ToString();
+                var data = new DeviceCode
+                {
+                    ClientId = Guid.NewGuid().ToString(),
+                    CreationTime = DateTime.UtcNow,
+                    Lifetime = 300
+                };
+
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
+                        FakeLogger<DeviceFlowStore>.Create());
+                    await store.StoreDeviceAuthorizationAsync(deviceCode, userCode, data);
+                }
+
+                WaitForIndexing(ravenStore);
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    var foundDeviceFlowCodes = session.Query<DeviceFlowCodes>().FirstOrDefault(x => x.DeviceCode == deviceCode);
+
+                    foundDeviceFlowCodes.Should().NotBeNull();
+                    var deserializedData =
+                        new PersistentGrantSerializer().Deserialize<DeviceCode>(foundDeviceFlowCodes?.Data);
+
+                    deserializedData.CreationTime.Should().BeCloseTo(data.CreationTime);
+                    deserializedData.ClientId.Should().Be(data.ClientId);
+                    deserializedData.Lifetime.Should().Be(data.Lifetime);
+                }
+            }
+        }
+
         [Fact]
         public async Task StoreDeviceAuthorizationAsync_WhenUserCodeAlreadyExists_ExpectException()
         {
