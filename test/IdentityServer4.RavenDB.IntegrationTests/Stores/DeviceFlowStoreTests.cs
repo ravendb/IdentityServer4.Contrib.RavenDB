@@ -9,7 +9,6 @@ using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.Entities;
 using IdentityServer4.RavenDB.Storage.Stores;
 using IdentityServer4.Stores.Serialization;
-using Microsoft.AspNetCore.Identity;
 using Xunit;
 
 namespace IdentityServer4.RavenDB.IntegrationTests.Stores
@@ -17,6 +16,21 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
     public class DeviceFlowStoreTests : IntegrationTest
     {
         private readonly IPersistentGrantSerializer serializer = new PersistentGrantSerializer();
+
+        [Fact]
+        public async Task FindByUserCodeAsync_WhenUserCodeDoesNotExist_ExpectNull()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
+                        FakeLogger<DeviceFlowStore>.Create());
+                    var code = await store.FindByUserCodeAsync($"user_{Guid.NewGuid().ToString()}");
+                    code.Should().BeNull();
+                }
+            }
+        }
 
         [Fact]
         public async Task FindByDeviceCodeAsync_WhenDeviceCodeExists_ExpectDataRetrievedCorrectly()

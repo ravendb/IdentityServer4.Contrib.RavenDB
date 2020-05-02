@@ -41,7 +41,15 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
         public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode)
         {
-            throw new NotImplementedException();
+            var deviceFlowCodes = await Session.Query<DeviceFlowCodes>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+                .FirstOrDefaultAsync(x => x.UserCode == userCode);
+            
+            var model = ToModel(deviceFlowCodes?.Data);
+
+            Logger.LogDebug("{userCode} found in database: {userCodeFound}", userCode, model != null);
+
+            return model;
         }
 
         public virtual async Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
@@ -49,6 +57,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             var deviceFlowCodes = await Session.Query<DeviceFlowCodes>()
                 .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
                 .FirstOrDefaultAsync(x => x.DeviceCode == deviceCode);
+            
             var model = ToModel(deviceFlowCodes?.Data);
 
             Logger.LogDebug("{deviceCode} found in database: {deviceCodeFound}", deviceCode, model != null);
