@@ -18,6 +18,57 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         private readonly IPersistentGrantSerializer serializer = new PersistentGrantSerializer();
 
         [Fact]
+        public async Task FindByUserCodeAsync_WhenUserCodeExists_ExpectDataRetrievedCorrectly()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var testDeviceCode = $"device_{Guid.NewGuid().ToString()}";
+                var testUserCode = $"user_{Guid.NewGuid().ToString()}";
+
+                var expectedSubject = $"sub_{Guid.NewGuid().ToString()}";
+                var expectedDeviceCodeData = new DeviceCode
+                {
+                    ClientId = "device_flow",
+                    RequestedScopes = new[] {"openid", "api1"},
+                    CreationTime = new DateTime(2018, 10, 19, 16, 14, 29),
+                    Lifetime = 300,
+                    IsOpenId = true,
+                    Subject = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+                        {new Claim(JwtClaimTypes.Subject, expectedSubject)}))
+                };
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(new DeviceFlowCodes
+                    {
+                        DeviceCode = testDeviceCode,
+                        UserCode = testUserCode,
+                        ClientId = expectedDeviceCodeData.ClientId,
+                        SubjectId = expectedDeviceCodeData.Subject.FindFirst(JwtClaimTypes.Subject).Value,
+                        CreationTime = expectedDeviceCodeData.CreationTime,
+                        Expiration = expectedDeviceCodeData.CreationTime.AddSeconds(expectedDeviceCodeData.Lifetime),
+                        Data = serializer.Serialize(expectedDeviceCodeData)
+                    });
+                    session.SaveChanges();
+                }
+
+                DeviceCode code;
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
+                        FakeLogger<DeviceFlowStore>.Create());
+                    code = await store.FindByUserCodeAsync(testUserCode);
+                }
+
+                code.Should().BeEquivalentTo(expectedDeviceCodeData,
+                    assertionOptions => assertionOptions.Excluding(x => x.Subject));
+
+                code.Subject.Claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Subject && x.Value == expectedSubject)
+                    .Should().NotBeNull();
+            }
+        }
+
+        [Fact]
         public async Task FindByUserCodeAsync_WhenUserCodeDoesNotExist_ExpectNull()
         {
             using (var ravenStore = GetDocumentStore())
