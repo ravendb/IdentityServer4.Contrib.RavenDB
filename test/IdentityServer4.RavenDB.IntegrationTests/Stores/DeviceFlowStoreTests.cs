@@ -18,6 +18,50 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         private readonly IPersistentGrantSerializer serializer = new PersistentGrantSerializer();
 
         [Fact]
+        public async Task StoreDeviceAuthorizationAsync_WhenUserCodeAlreadyExists_ExpectException()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var existingUserCode = $"user_{Guid.NewGuid().ToString()}";
+                var deviceCodeData = new DeviceCode
+                {
+                    ClientId = "device_flow",
+                    RequestedScopes = new[] {"openid", "api1"},
+                    CreationTime = new DateTime(2018, 10, 19, 16, 14, 29),
+                    Lifetime = 300,
+                    IsOpenId = true,
+                    Subject = new ClaimsPrincipal(new ClaimsIdentity(
+                        new List<Claim> {new Claim(JwtClaimTypes.Subject, $"sub_{Guid.NewGuid().ToString()}")}))
+                };
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(new DeviceFlowCodes
+                    {
+                        DeviceCode = $"device_{Guid.NewGuid().ToString()}",
+                        UserCode = existingUserCode,
+                        ClientId = deviceCodeData.ClientId,
+                        SubjectId = deviceCodeData.Subject.FindFirst(JwtClaimTypes.Subject).Value,
+                        CreationTime = deviceCodeData.CreationTime,
+                        Expiration = deviceCodeData.CreationTime.AddSeconds(deviceCodeData.Lifetime),
+                        Data = serializer.Serialize(deviceCodeData)
+                    });
+                    session.SaveChanges();
+                }
+
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
+                        FakeLogger<DeviceFlowStore>.Create());
+
+                    await Assert.ThrowsAsync<Exception>(() =>
+                        store.StoreDeviceAuthorizationAsync($"device_{Guid.NewGuid().ToString()}", existingUserCode,
+                                deviceCodeData));
+                }
+            }
+        }
+
+        [Fact]
         public async Task StoreDeviceAuthorizationAsync_WhenDeviceCodeAlreadyExists_ExpectException()
         {
             using (var ravenStore = GetDocumentStore())

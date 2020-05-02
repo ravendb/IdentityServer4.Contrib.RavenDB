@@ -33,12 +33,15 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             Logger = logger;
         }
 
-
         public virtual async Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data)
         {
             var device = await this.FindByDeviceCodeAsync(deviceCode);
             if (device != null)
                 throw new Exception($"device code {deviceCode} is already registered");
+
+            device = await this.FindByUserCodeAsync(userCode);
+            if (device != null)
+                throw new Exception($"user code {userCode} is already registered");
 
             await Session.StoreAsync(ToEntity(data, deviceCode, userCode));
 
