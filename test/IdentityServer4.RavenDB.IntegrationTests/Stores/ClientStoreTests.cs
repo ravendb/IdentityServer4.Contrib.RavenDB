@@ -11,6 +11,43 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
     public class ClientStoreTests : IntegrationTest
     {
         [Fact]
+        public async Task FindClientByIdAsync_WhenClientExistsWithCollections_ExpectClientReturnedCollections()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var testClient = new Client
+                {
+                    ClientId = "properties_test_client",
+                    ClientName = "Properties Test Client",
+                    AllowedCorsOrigins = {"https://localhost"},
+                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AllowedScopes = {"openid", "profile", "api1"},
+                    Claims = {new ClientClaim("test", "value")},
+                    ClientSecrets = {new Secret("secret".Sha256())},
+                    IdentityProviderRestrictions = {"AD"},
+                    PostLogoutRedirectUris = {"https://locahost/signout-callback"},
+                    Properties = {{"foo1", "bar1"}, {"foo2", "bar2"},},
+                    RedirectUris = {"https://locahost/signin"}
+                };
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(testClient.ToEntity());
+                    session.SaveChanges();
+                }
+
+                Client client;
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new ClientStore(session, FakeLogger<ClientStore>.Create());
+                    client = await store.FindClientByIdAsync(testClient.ClientId);
+                }
+
+                client.Should().BeEquivalentTo(testClient);
+            }
+        }
+
+        [Fact]
         public async Task FindClientByIdAsync_WhenClientsExistWithManyCollections_ExpectClientReturnedInUnderFiveSeconds()
         {
             using (var ravenStore = GetDocumentStore())
