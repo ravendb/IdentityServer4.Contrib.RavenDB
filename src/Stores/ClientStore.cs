@@ -29,6 +29,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         public virtual async Task<Client> FindClientByIdAsync(string clientId)
         {
             var baseQuery = Session.Query<Entities.Client>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
                 .Where(x => x.ClientId == clientId)
                 .Take(1);
 

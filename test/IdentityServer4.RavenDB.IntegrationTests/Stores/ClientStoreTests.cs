@@ -11,6 +11,34 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
     public class ClientStoreTests : IntegrationTest
     {
         [Fact]
+        public async Task FindClientByIdAsync_WhenClientExists_ExpectClientReturned()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var testClient = new Client
+                {
+                    ClientId = "test_client",
+                    ClientName = "Test Client"
+                };
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(testClient.ToEntity());
+                    session.SaveChanges();
+                }
+
+                Client client;
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new ClientStore(session, FakeLogger<ClientStore>.Create());
+                    client = await store.FindClientByIdAsync(testClient.ClientId);
+                }
+
+                client.Should().NotBeNull();
+            }
+        }
+
+        [Fact]
         public async Task FindClientByIdAsync_WhenClientExistsWithCollections_ExpectClientReturnedCollections()
         {
             using (var ravenStore = GetDocumentStore())
