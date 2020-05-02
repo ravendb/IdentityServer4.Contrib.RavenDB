@@ -2,7 +2,7 @@
 
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    public class DeviceFlowCodes
+    public class DeviceFlowCode
     {
         public string Id { get; set; }
 

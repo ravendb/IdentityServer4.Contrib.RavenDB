@@ -50,7 +50,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
         public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode)
         {
-            var deviceFlowCodes = await Session.Query<DeviceFlowCodes>()
+            var deviceFlowCodes = await Session.Query<DeviceFlowCode>()
                 .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
                 .FirstOrDefaultAsync(x => x.UserCode == userCode);
             
@@ -63,7 +63,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
         public virtual async Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
         {
-            var deviceFlowCodes = await Session.Query<DeviceFlowCodes>()
+            var deviceFlowCodes = await Session.Query<DeviceFlowCode>()
                 .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
                 .FirstOrDefaultAsync(x => x.DeviceCode == deviceCode);
             
@@ -76,7 +76,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
         public virtual async Task UpdateByUserCodeAsync(string userCode, DeviceCode data)
         {
-            var existing = await Session.Query<DeviceFlowCodes>()
+            var existing = await Session.Query<DeviceFlowCode>()
                 .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
                 .SingleOrDefaultAsync(x => x.UserCode == userCode);
             if (existing == null)
@@ -103,7 +103,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
         public virtual async Task RemoveByDeviceCodeAsync(string deviceCode)
         {
-            var deviceFlowCode = await Session.Query<DeviceFlowCodes>()
+            var deviceFlowCode = await Session.Query<DeviceFlowCode>()
                 .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
                 .FirstOrDefaultAsync(x => x.DeviceCode == deviceCode);
 
@@ -128,11 +128,11 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             }
         }
 
-        protected DeviceFlowCodes ToEntity(DeviceCode model, string deviceCode, string userCode)
+        protected DeviceFlowCode ToEntity(DeviceCode model, string deviceCode, string userCode)
         {
             if (model == null || deviceCode == null || userCode == null) return null;
 
-            return new DeviceFlowCodes
+            return new DeviceFlowCode
             {
                 DeviceCode = deviceCode,
                 UserCode = userCode,

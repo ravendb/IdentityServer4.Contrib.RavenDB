@@ -42,7 +42,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 using (var session = ravenStore.OpenSession())
                 {
-                    var foundDeviceFlowCodes = session.Query<DeviceFlowCodes>().FirstOrDefault(x => x.DeviceCode == deviceCode);
+                    var foundDeviceFlowCodes = session.Query<DeviceFlowCode>().FirstOrDefault(x => x.DeviceCode == deviceCode);
 
                     foundDeviceFlowCodes.Should().NotBeNull();
                     foundDeviceFlowCodes?.DeviceCode.Should().Be(deviceCode);
@@ -76,7 +76,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 using (var session = ravenStore.OpenSession())
                 {
-                    var foundDeviceFlowCodes = session.Query<DeviceFlowCodes>().FirstOrDefault(x => x.DeviceCode == deviceCode);
+                    var foundDeviceFlowCodes = session.Query<DeviceFlowCode>().FirstOrDefault(x => x.DeviceCode == deviceCode);
 
                     foundDeviceFlowCodes.Should().NotBeNull();
                     var deserializedData =
@@ -108,7 +108,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 using (var session = ravenStore.OpenSession())
                 {
-                    session.Store(new DeviceFlowCodes
+                    session.Store(new DeviceFlowCode
                     {
                         DeviceCode = $"device_{Guid.NewGuid().ToString()}",
                         UserCode = existingUserCode,
@@ -152,7 +152,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 using (var session = ravenStore.OpenSession())
                 {
-                    session.Store(new DeviceFlowCodes
+                    session.Store(new DeviceFlowCode
                     {
                         DeviceCode = existingDeviceCode,
                         UserCode = $"user_{Guid.NewGuid().ToString()}",
@@ -199,7 +199,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 using (var session = ravenStore.OpenSession())
                 {
-                    session.Store(new DeviceFlowCodes
+                    session.Store(new DeviceFlowCode
                     {
                         DeviceCode = testDeviceCode,
                         UserCode = testUserCode,
@@ -265,7 +265,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 using (var session = ravenStore.OpenSession())
                 {
-                    session.Store(new DeviceFlowCodes
+                    session.Store(new DeviceFlowCode
                     {
                         DeviceCode = testDeviceCode,
                         UserCode = testUserCode,
@@ -329,7 +329,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 using (var session = ravenStore.OpenSession())
                 {
-                    session.Store(new DeviceFlowCodes
+                    session.Store(new DeviceFlowCode
                     {
                         DeviceCode = testDeviceCode,
                         UserCode = testUserCode,
@@ -363,10 +363,10 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 WaitForIndexing(ravenStore);
 
-                DeviceFlowCodes updatedCodes;
+                DeviceFlowCode updatedCodes;
                 using (var session = ravenStore.OpenSession())
                 {
-                    updatedCodes = session.Query<DeviceFlowCodes>().Single(x => x.UserCode == testUserCode);
+                    updatedCodes = session.Query<DeviceFlowCode>().Single(x => x.UserCode == testUserCode);
                 }
 
                 // should be unchanged
@@ -405,7 +405,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 using (var session = ravenStore.OpenSession())
                 {
-                    session.Store(new DeviceFlowCodes
+                    session.Store(new DeviceFlowCode
                     {
                         DeviceCode = testDeviceCode,
                         UserCode = testUserCode,
@@ -428,7 +428,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
                 using (var session = ravenStore.OpenSession())
                 {
-                    session.Query<DeviceFlowCodes>().FirstOrDefault(x => x.UserCode == testUserCode)
+                    session.Query<DeviceFlowCode>().FirstOrDefault(x => x.UserCode == testUserCode)
                         .Should().BeNull();
                 }
             }
