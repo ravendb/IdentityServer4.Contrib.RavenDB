@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.Mappers;
@@ -10,6 +11,20 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 {
     public class ClientStoreTests : IntegrationTest
     {
+        [Fact]
+        public async Task FindClientByIdAsync_WhenClientDoesNotExist_ExpectNull()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new ClientStore(session, FakeLogger<ClientStore>.Create());
+                    var client = await store.FindClientByIdAsync(Guid.NewGuid().ToString());
+                    client.Should().BeNull();
+                }
+            }
+        }
+
         [Fact]
         public async Task FindClientByIdAsync_WhenClientExists_ExpectClientReturned()
         {
