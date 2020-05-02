@@ -34,19 +34,26 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         }
 
 
-        public Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data)
+        public virtual async Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data)
         {
             throw new NotImplementedException();
         }
 
-        public Task<DeviceCode> FindByUserCodeAsync(string userCode)
+        public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode)
         {
             throw new NotImplementedException();
         }
 
-        public Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
+        public virtual async Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
         {
-            throw new NotImplementedException();
+            var deviceFlowCodes = await Session.Query<DeviceFlowCodes>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+                .FirstOrDefaultAsync(x => x.DeviceCode == deviceCode);
+            var model = ToModel(deviceFlowCodes?.Data);
+
+            Logger.LogDebug("{deviceCode} found in database: {deviceCodeFound}", deviceCode, model != null);
+
+            return model;
         }
 
         public virtual async Task UpdateByUserCodeAsync(string userCode, DeviceCode data)

@@ -19,11 +19,25 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         private readonly IPersistentGrantSerializer serializer = new PersistentGrantSerializer();
 
         [Fact]
+        public async Task FindByDeviceCodeAsync_WhenDeviceCodeDoesNotExist_ExpectNull()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
+                        FakeLogger<DeviceFlowStore>.Create());
+                    var code = await store.FindByDeviceCodeAsync($"device_{Guid.NewGuid().ToString()}");
+                    code.Should().BeNull();
+                }
+            }
+        }
+
+        [Fact]
         public async Task UpdateByUserCodeAsync_WhenDeviceCodeAuthorized_ExpectSubjectAndDataUpdated()
         {
             using (var ravenStore = GetDocumentStore())
             {
-
                 var testDeviceCode = $"device_{Guid.NewGuid().ToString()}";
                 var testUserCode = $"user_{Guid.NewGuid().ToString()}";
 
