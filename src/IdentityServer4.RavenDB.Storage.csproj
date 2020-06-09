@@ -18,4 +18,8 @@
     <PackageReference Include="RavenDB.Client" Version="4.2.102" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
 </Project>
