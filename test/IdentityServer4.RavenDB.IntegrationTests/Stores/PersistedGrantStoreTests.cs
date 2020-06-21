@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
+using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Identity;
 using Xunit;
+using Xunit.Sdk;
 
 namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 {
@@ -246,6 +248,54 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                         .FirstOrDefault(x => x.Key == persistedGrant.Key);
                     Assert.NotNull(foundGrant);
                     Assert.Equal(newDate, persistedGrant.Expiration);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task GetAllAsync_is_implemented()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var persistedGrant = CreateTestObject();
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(persistedGrant.ToEntity());
+                    session.SaveChanges();
+                }
+
+                var newDate = persistedGrant.Expiration.Value.AddHours(1);
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
+
+                    PersistedGrantFilter filter = new PersistedGrantFilter();
+                    await store.GetAllAsync(filter);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RemoveAllAsync_is_implemented()
+        {
+            using (var ravenStore = GetDocumentStore())
+            {
+                var persistedGrant = CreateTestObject();
+
+                using (var session = ravenStore.OpenSession())
+                {
+                    session.Store(persistedGrant.ToEntity());
+                    session.SaveChanges();
+                }
+
+                var newDate = persistedGrant.Expiration.Value.AddHours(1);
+                using (var session = ravenStore.OpenAsyncSession())
+                {
+                    var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
+
+                    PersistedGrantFilter filter = new PersistedGrantFilter();
+                    await store.RemoveAllAsync(filter);
                 }
             }
         }

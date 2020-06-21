@@ -69,6 +69,11 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             return model;
         }
 
+        public Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual async Task<IEnumerable<PersistedGrant>> GetAllAsync(string subjectId)
         {
             var persistedGrants = await Session.Query<Entities.PersistedGrant>()
@@ -108,6 +113,11 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             {
                 Logger.LogDebug("no {persistedGrantKey} persisted grant found in database", key);
             }
+        }
+
+        public Task RemoveAllAsync(PersistedGrantFilter filter)
+        {
+            throw new NotImplementedException();
         }
 
         public virtual async Task RemoveAllAsync(string subjectId, string clientId)
