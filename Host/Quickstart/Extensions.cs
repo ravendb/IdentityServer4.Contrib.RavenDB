@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Mvc;
 
-namespace IdentityServer
+namespace IdentityServer4.Quickstart.UI
 {
     public static class Extensions
     {
