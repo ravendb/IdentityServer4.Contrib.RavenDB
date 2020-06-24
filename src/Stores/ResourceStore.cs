@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
+using IdentityServer4.RavenDB.Storage.Entities;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.Stores;
 using Microsoft.Extensions.Logging;
@@ -33,7 +34,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         /// </summary>
         /// <param name="scopeNames"></param>
         /// <returns></returns>
-        public virtual async Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
+        public virtual async Task<IEnumerable<Models.IdentityResource>> FindIdentityResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
@@ -41,7 +42,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
                 .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
                 .Where(identityResource => identityResource.Name.In(scopeNames));
 
-            IdentityResource[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
+            Models.IdentityResource[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
 
             if (result.Any())
             {
@@ -87,7 +88,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         /// </summary>
         /// <param name="scopeNames"></param>
         /// <returns></returns>
-        public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
+        public virtual async Task<IEnumerable<Models.ApiResource>> FindApiResourcesByScopeNameAsync(IEnumerable<string> scopeNames)
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
@@ -110,7 +111,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             return result;
         }
 
-        public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
+        public virtual async Task<IEnumerable<Models.ApiResource>> FindApiResourcesByNameAsync(IEnumerable<string> apiResourceNames)
         {
             if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
@@ -119,7 +120,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
                     .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
                     .Where(apiResource => apiResource.Name.In(apiResourceNames));
 
-            ApiResource[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
+            Models.ApiResource[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
 
             if (result.Any())
             {
@@ -153,15 +154,30 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
             var result = new Resources(
                 (await identity.ToArrayAsync()).Select(x => x.ToModel()),
-                (await apis.ToArrayAsync()).Select(x => x.ToModel()),
-                (await scopes.ToArrayAsync()).Select(x => x.ToModel())
+                (await apis.ToArrayAsync()).Select(x => x.ToModel())
+                //(await scopes.ToArrayAsync()).Select(x => x.ToModel())
             );
 
             Logger.LogDebug("Found {scopes} as all scopes, and {apis} as API resources",
-                result.IdentityResources.Select(x => x.Name).Union(result.ApiScopes.Select(x => x.Name)),
+                result.IdentityResources.Select(x => x.Name),
                 result.ApiResources.Select(x => x.Name));
 
             return result;
+        }
+
+        Task<IEnumerable<Models.IdentityResource>> IResourceStore.FindIdentityResourcesByScopeAsync(IEnumerable<string> scopeNames)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<IEnumerable<Models.ApiResource>> IResourceStore.FindApiResourcesByScopeAsync(IEnumerable<string> scopeNames)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<Models.ApiResource> IResourceStore.FindApiResourceAsync(string name)
+        {
+            throw new NotImplementedException();
         }
     }
 }

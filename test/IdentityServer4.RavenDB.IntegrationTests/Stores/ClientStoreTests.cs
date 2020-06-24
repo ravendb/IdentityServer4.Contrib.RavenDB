@@ -65,7 +65,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     AllowedCorsOrigins = {"https://localhost"},
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     AllowedScopes = {"openid", "profile", "api1"},
-                    Claims = {new ClientClaim("test", "value")},
+                    //Claims = {new ClientClaim("test", "value")},
                     ClientSecrets = {new Secret("secret".Sha256())},
                     IdentityProviderRestrictions = {"AD"},
                     PostLogoutRedirectUris = {"https://locahost/signout-callback"},
