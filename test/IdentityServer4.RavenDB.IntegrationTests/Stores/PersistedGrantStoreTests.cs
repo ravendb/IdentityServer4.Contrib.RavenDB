@@ -252,52 +252,52 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
             }
         }
 
-        [Fact]
-        public async Task GetAllAsync_is_implemented()
-        {
-            using (var ravenStore = GetDocumentStore())
-            {
-                var persistedGrant = CreateTestObject();
+        //[Fact]
+        //public async Task GetAllAsync_is_implemented()
+        //{
+        //    using (var ravenStore = GetDocumentStore())
+        //    {
+        //        var persistedGrant = CreateTestObject();
 
-                using (var session = ravenStore.OpenSession())
-                {
-                    session.Store(persistedGrant.ToEntity());
-                    session.SaveChanges();
-                }
+        //        using (var session = ravenStore.OpenSession())
+        //        {
+        //            session.Store(persistedGrant.ToEntity());
+        //            session.SaveChanges();
+        //        }
 
-                var newDate = persistedGrant.Expiration.Value.AddHours(1);
-                using (var session = ravenStore.OpenAsyncSession())
-                {
-                    var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
+        //        var newDate = persistedGrant.Expiration.Value.AddHours(1);
+        //        using (var session = ravenStore.OpenAsyncSession())
+        //        {
+        //            var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
 
-                    PersistedGrantFilter filter = new PersistedGrantFilter();
-                    await store.GetAllAsync(filter);
-                }
-            }
-        }
+        //            PersistedGrantFilter filter = new PersistedGrantFilter();
+        //            await store.GetAllAsync(filter);
+        //        }
+        //    }
+        //}
 
-        [Fact]
-        public async Task RemoveAllAsync_is_implemented()
-        {
-            using (var ravenStore = GetDocumentStore())
-            {
-                var persistedGrant = CreateTestObject();
+        //[Fact]
+        //public async Task RemoveAllAsync_is_implemented()
+        //{
+        //    using (var ravenStore = GetDocumentStore())
+        //    {
+        //        var persistedGrant = CreateTestObject();
 
-                using (var session = ravenStore.OpenSession())
-                {
-                    session.Store(persistedGrant.ToEntity());
-                    session.SaveChanges();
-                }
+        //        using (var session = ravenStore.OpenSession())
+        //        {
+        //            session.Store(persistedGrant.ToEntity());
+        //            session.SaveChanges();
+        //        }
 
-                var newDate = persistedGrant.Expiration.Value.AddHours(1);
-                using (var session = ravenStore.OpenAsyncSession())
-                {
-                    var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
+        //        var newDate = persistedGrant.Expiration.Value.AddHours(1);
+        //        using (var session = ravenStore.OpenAsyncSession())
+        //        {
+        //            var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
 
-                    PersistedGrantFilter filter = new PersistedGrantFilter();
-                    await store.RemoveAllAsync(filter);
-                }
-            }
-        }
+        //            PersistedGrantFilter filter = new PersistedGrantFilter();
+        //            await store.RemoveAllAsync(filter);
+        //        }
+        //    }
+        //}
     }
 }
