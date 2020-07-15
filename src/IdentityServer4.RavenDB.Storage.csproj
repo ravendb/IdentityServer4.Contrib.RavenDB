@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>IdentityServer4.Contrib.RavenDB</PackageId>
     <Authors>Hibernating Rhinos</Authors>
     <Product>IdentityServer4.Contrib.RavenDB</Product>
