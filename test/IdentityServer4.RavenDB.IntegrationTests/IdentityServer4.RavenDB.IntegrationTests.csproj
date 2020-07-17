@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\IdentityServer4.RavenDB.Storage.csproj" />
+    <ProjectReference Include="..\..\src\IdentityServer4.RavenDB.Storage\IdentityServer4.RavenDB.Storage.csproj" />
   </ItemGroup>
 
 </Project>

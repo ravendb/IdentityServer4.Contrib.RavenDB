@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0A1C5D26-4336-42BB-9D73-0464E3412F54}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.RavenDB.Storage", "src\IdentityServer4.RavenDB.Storage.csproj", "{2B95293C-FF0D-4FAD-9002-CACAC553F8CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.RavenDB.Storage", "src\IdentityServer4.RavenDB.Storage\IdentityServer4.RavenDB.Storage.csproj", "{2B95293C-FF0D-4FAD-9002-CACAC553F8CA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7A045ABA-B1ED-43E6-9C30-D7C6E4E93AF8}"
 EndProject
