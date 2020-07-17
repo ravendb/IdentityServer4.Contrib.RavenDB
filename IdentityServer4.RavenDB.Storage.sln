@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "host", "host", "{2D41CBAB-7
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host", "Host\Host.csproj", "{3EDEABBB-6A6A-4148-828C-DE6B0C393501}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer4.RavenDB.AspNetCore.Extensions", "src\IdentityServer4.RavenDB.AspNetCore.Extensions\IdentityServer4.RavenDB.AspNetCore.Extensions.csproj", "{70C4D632-EC4D-438D-9272-82B282E3C546}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{3EDEABBB-6A6A-4148-828C-DE6B0C393501}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EDEABBB-6A6A-4148-828C-DE6B0C393501}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EDEABBB-6A6A-4148-828C-DE6B0C393501}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70C4D632-EC4D-438D-9272-82B282E3C546}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70C4D632-EC4D-438D-9272-82B282E3C546}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70C4D632-EC4D-438D-9272-82B282E3C546}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70C4D632-EC4D-438D-9272-82B282E3C546}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,6 +47,7 @@ Global
 		{2B95293C-FF0D-4FAD-9002-CACAC553F8CA} = {0A1C5D26-4336-42BB-9D73-0464E3412F54}
 		{EFCDFC77-D1D5-463B-BBAD-E1F47D1C9138} = {7A045ABA-B1ED-43E6-9C30-D7C6E4E93AF8}
 		{3EDEABBB-6A6A-4148-828C-DE6B0C393501} = {2D41CBAB-77B9-49F9-8531-AF3D0EAE0695}
+		{70C4D632-EC4D-438D-9272-82B282E3C546} = {0A1C5D26-4336-42BB-9D73-0464E3412F54}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5823F5A-34C7-4AA1-86E5-A6F65F7DA3CC}
