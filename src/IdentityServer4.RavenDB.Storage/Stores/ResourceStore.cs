@@ -63,27 +63,27 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         /// </summary>
         /// <param name="scopeNames"></param>
         /// <returns></returns>
-        //public virtual async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
-        //{
-        //    if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
+        public virtual async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
+        {
+            if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
-        //    var query = Session.Query<Entities.ApiScope>()
-        //        .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
-        //        .Where(apiScope => apiScope.Name.In(scopeNames));
+            var query = Session.Query<Entities.ApiScope>()
+                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+                .Where(apiScope => apiScope.Name.In(scopeNames));
 
-        //    ApiScope[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
+            ApiScope[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
 
-        //    if (result.Any())
-        //    {
-        //        Logger.LogDebug("Found {scopes} scopes in database", result.Select(x => x.Name));
-        //    }
-        //    else
-        //    {
-        //        Logger.LogDebug("Did not find {scopes} scopes in database", scopeNames);
-        //    }
+            if (result.Any())
+            {
+                Logger.LogDebug("Found {scopes} scopes in database", result.Select(x => x.Name));
+            }
+            else
+            {
+                Logger.LogDebug("Did not find {scopes} scopes in database", scopeNames);
+            }
 
-        //    return result;
-        //}
+            return result;
+        }
 
         /// <summary>
         /// Gets API resources by scope name.
