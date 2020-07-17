@@ -13,4 +13,8 @@
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\src\IdentityServer4.RavenDB.AspNetCore.Extensions\IdentityServer4.RavenDB.AspNetCore.Extensions.csproj" />
+  </ItemGroup>
+
 </Project>
