@@ -159,9 +159,27 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             return result;
         }
 
-        public Task<IEnumerable<ApiResource>> FindApiResourcesByScopeAsync(IEnumerable<string> scopeNames)
+        public virtual async Task<IEnumerable<ApiResource>> FindApiResourcesByScopeAsync(IEnumerable<string> scopeNames)
         {
-            throw new NotImplementedException();
+            if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
+
+            var query =
+                Session.Query<Entities.ApiResource>()
+                    .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+                    .Where(apiScope => apiScope.Name.In(scopeNames));
+
+            ApiResource[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
+
+            if (result.Any())
+            {
+                Logger.LogDebug("Found {apis} API ApiResource in database", result.Select(x => x.Name));
+            }
+            else
+            {
+                Logger.LogDebug("Did not find {apis} API ApiResource in database", scopeNames);
+            }
+
+            return result;
         }
 
         public Task<ApiResource> FindApiResourceAsync(string name)
