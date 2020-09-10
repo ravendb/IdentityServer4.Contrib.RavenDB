@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
-    <PackageReference Include="IdentityServer4" Version="4.0.0" />
+    <PackageReference Include="IdentityServer4" Version="4.0.4" />
     <PackageReference Include="IdentityServer4.Storage" Version="4.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="RavenDB.TestDriver" Version="4.2.105" />

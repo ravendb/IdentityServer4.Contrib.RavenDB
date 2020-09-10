@@ -3,9 +3,9 @@ using IdentityServer4.Stores;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace IdentityServer4.RavenDB.AspNetCore.Extensions
+namespace IdentityServer4.Contrib.RavenDB.Extensions
 {
-    public static class IdentityServerRavenDBBuilderExtensions
+    public static class IdentityServerBuilderExtensions
     {
         public static IIdentityServerBuilder AddConfigurationStore(
             this IIdentityServerBuilder builder, IConfiguration configuration)

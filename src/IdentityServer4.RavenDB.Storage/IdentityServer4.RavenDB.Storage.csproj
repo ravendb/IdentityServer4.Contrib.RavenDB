@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageId>IdentityServer4.Contrib.RavenDB</PackageId>
     <Authors>Hibernating Rhinos</Authors>
     <Product>IdentityServer4.Contrib.RavenDB</Product>
@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.0.0" />
+    <PackageReference Include="IdentityServer4" Version="4.0.4" />
     <PackageReference Include="IdentityServer4.Storage" Version="4.0.4" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.8" />
     <PackageReference Include="RavenDB.Client" Version="4.2.105" />
