@@ -21,9 +21,9 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public static ApiScope ToModel(this ApiScope entity)
+        public static Models.ApiScope ToModel(this ApiScope entity)
         {
-            return entity == null ? null : Mapper.Map<ApiScope>(entity);
+            return entity == null ? null : Mapper.Map<IdentityServer4.Models.ApiScope>(entity);
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// </summary>
         /// <param name="model">The model.</param>
         /// <returns></returns>
-        public static ApiScope ToEntity(this ApiScope model)
+        public static ApiScope ToEntity(this Models.ApiScope model)
         {
             return model == null ? null : Mapper.Map<ApiScope>(model);
         }

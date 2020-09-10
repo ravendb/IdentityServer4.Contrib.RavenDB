@@ -16,16 +16,16 @@ namespace IdentityServer4.RavenDB.Storage.Stores
     /// <seealso cref="IdentityServer4.Stores.IClientStore" />
     public class ClientStore : IClientStore
     {
-        protected readonly IAsyncDocumentSession Session;
-
-        protected readonly ILogger<ClientStore> Logger;
-
         public ClientStore(IAsyncDocumentSession session, ILogger<ClientStore> logger)
         {
             Session = session ?? throw new ArgumentNullException(nameof(session));
             Logger = logger;
         }
 
+        protected IAsyncDocumentSession Session { get; }
+        protected ILogger<ClientStore> Logger { get; }
+
+        /// <inheritdoc />
         public virtual async Task<Client> FindClientByIdAsync(string clientId)
         {
             var baseQuery = Session.Query<Entities.Client>()

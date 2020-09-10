@@ -14,7 +14,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
     {
         private static IdentityResource CreateIdentityTestResource()
         {
-            return new IdentityResource()
+            return new IdentityResource
             {
                 Name = Guid.NewGuid().ToString(),
                 DisplayName = Guid.NewGuid().ToString(),
@@ -30,7 +30,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
         private static ApiResource CreateApiResourceTestResource()
         {
-            return new ApiResource()
+            return new ApiResource
             {
                 Name = Guid.NewGuid().ToString(),
                 ApiSecrets = new List<Secret> { new Secret("secret".ToSha256()) },
@@ -45,7 +45,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
         private static ApiScope CreateApiScopeTestResource()
         {
-            return new ApiScope()
+            return new ApiScope
             {
                 Name = Guid.NewGuid().ToString(),
                 UserClaims =
@@ -341,11 +341,11 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 {
                     session.Store(visibleIdentityResource.ToEntity());
                     session.Store(visibleApiResource.ToEntity());
-                    //session.Store(visibleApiScope.ToEntity());
+                    session.Store(visibleApiScope.ToEntity());
 
                     session.Store(hiddenIdentityResource.ToEntity());
                     session.Store(hiddenApiResource.ToEntity());
-                    //session.Store(hiddenApiScope.ToEntity());
+                    session.Store(hiddenApiScope.ToEntity());
 
                     session.SaveChanges();
                 }

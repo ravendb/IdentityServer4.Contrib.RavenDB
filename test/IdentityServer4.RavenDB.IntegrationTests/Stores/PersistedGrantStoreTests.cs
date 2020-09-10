@@ -6,9 +6,7 @@ using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
 using IdentityServer4.Stores;
-using Microsoft.AspNetCore.Identity;
 using Xunit;
-using Xunit.Sdk;
 
 namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 {
@@ -92,7 +90,11 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 using (var session = ravenStore.OpenAsyncSession())
                 {
                     var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
-                    foundPersistedGrants = (await store.GetAllAsync(persistedGrant.SubjectId)).ToList();
+                    var filter = new PersistedGrantFilter
+                    {
+                        SubjectId = persistedGrant.SubjectId
+                    };
+                    foundPersistedGrants = (await store.GetAllAsync(filter)).ToList();
                 }
 
                 Assert.NotNull(foundPersistedGrants);
@@ -146,7 +148,13 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 using (var session = ravenStore.OpenAsyncSession())
                 {
                     var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
-                    await store.RemoveAllAsync(persistedGrant.SubjectId, persistedGrant.ClientId);
+                    var filter = new PersistedGrantFilter
+                    {
+                        SubjectId = persistedGrant.SubjectId,
+                        ClientId = persistedGrant.ClientId
+
+                    };
+                    await store.RemoveAllAsync(filter);
                 }
 
                 WaitForIndexing(ravenStore);
@@ -176,7 +184,13 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 using (var session = ravenStore.OpenAsyncSession())
                 {
                     var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
-                    await store.RemoveAllAsync(persistedGrant.SubjectId, persistedGrant.ClientId, persistedGrant.Type);
+                    var filter = new PersistedGrantFilter
+                    {
+                        SubjectId = persistedGrant.SubjectId,
+                        ClientId = persistedGrant.ClientId,
+                        Type = persistedGrant.Type
+                    };
+                    await store.RemoveAllAsync(filter);
                 }
 
                 WaitForIndexing(ravenStore);
