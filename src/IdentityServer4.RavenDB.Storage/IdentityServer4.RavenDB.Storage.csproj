@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <PackageId>IdentityServer4.Contrib.RavenDB</PackageId>
+    <PackageId>RavenDB.Contrib.IdentityServer4</PackageId>
     <Authors>Hibernating Rhinos</Authors>
-    <Product>IdentityServer4.Contrib.RavenDB</Product>
+    <Product>RavenDB.Contrib.IdentityServer4</Product>
     <Description>RavenDB persistence layer for IdentityServer4</Description>
     <PackageTags>OAuth2;OAuth 2.0;OpenID Connect;Security;Identity;IdentityServer;RavenDB</PackageTags>
     <PackageProjectUrl>https://github.com/ravendb/IdentityServer4.Contrib.RavenDB</PackageProjectUrl>
