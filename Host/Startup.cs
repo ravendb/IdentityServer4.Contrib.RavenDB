@@ -3,8 +3,8 @@
 
 
 using IdentityServer4;
+using IdentityServer4.Contrib.RavenDB.Extensions;
 using IdentityServer4.Quickstart.UI;
-using IdentityServer4.RavenDB.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -49,7 +49,7 @@ namespace Host
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
             })
-                .AddConfigurationStore(Configuration.GetSection("RavenDB"))
+                .AddConfigurationStore()
                 .AddTestUsers(TestUsers.Users);
 
             // in-memory, code config

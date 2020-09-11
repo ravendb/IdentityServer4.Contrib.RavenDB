@@ -8,6 +8,16 @@
     <Description>RavenDB persistence layer for IdentityServer4</Description>
     <PackageTags>OAuth2;OAuth 2.0;OpenID Connect;Security;Identity;IdentityServer;RavenDB</PackageTags>
     <PackageProjectUrl>https://github.com/ravendb/IdentityServer4.Contrib.RavenDB</PackageProjectUrl>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugSymbols>True</DebugSymbols>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IsPackable>True</IsPackable>
+
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+
   </PropertyGroup>
 
   <ItemGroup>

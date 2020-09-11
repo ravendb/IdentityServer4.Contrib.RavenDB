@@ -1,6 +1,5 @@
-﻿using IdentityServer4.RavenDB.Storage.Stores;
-using IdentityServer4.Stores;
-using Microsoft.Extensions.Configuration;
+﻿using IdentityServer4.RavenDB.Storage.Services;
+using IdentityServer4.RavenDB.Storage.Stores;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IdentityServer4.Contrib.RavenDB.Extensions
@@ -8,20 +7,31 @@ namespace IdentityServer4.Contrib.RavenDB.Extensions
     public static class IdentityServerBuilderExtensions
     {
         public static IIdentityServerBuilder AddConfigurationStore(
-            this IIdentityServerBuilder builder, IConfiguration configuration)
-        {
-            //builder.Services.Configure<RavenDBConfiguration>(configuration);
-
-            return builder.AddConfigurationStore();
-        }
-
-        private static IIdentityServerBuilder AddConfigurationStore(
             this IIdentityServerBuilder builder)
         {
-            builder.Services.AddTransient<IClientStore, ClientStore>();
-            builder.Services.AddTransient<IResourceStore, ResourceStore>();
-            //builder.Services.AddTransient<ICorsPolicyService, CorsPolicyService>();
+            builder.AddClientStore<ClientStore>();
+            builder.AddResourceStore<ResourceStore>();
+            builder.AddCorsPolicyService<CorsPolicyService>();
 
+            return builder;
+        }
+
+        public static IIdentityServerBuilder AddConfigurationStoreCache(
+            this IIdentityServerBuilder builder)
+        {
+            builder.AddInMemoryCaching();
+
+            builder.AddClientStoreCache<ClientStore>();
+            builder.AddResourceStoreCache<ResourceStore>();
+            builder.AddCorsPolicyCache<CorsPolicyService>();
+
+            return builder;
+        }
+
+        public static IIdentityServerBuilder AddOperationalStore(this IIdentityServerBuilder builder)
+        {
+            builder.AddPersistedGrantStore<PersistedGrantStore>();
+            builder.AddDeviceFlowStore<DeviceFlowStore>();
             return builder;
         }
     }
