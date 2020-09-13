@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentityServer4.Contrib.RavenDB.Extensions;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
+using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.Stores;
 using Microsoft.Extensions.Logging;
@@ -31,9 +33,9 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         /// <inheritdoc />
         public virtual async Task StoreAsync(PersistedGrant token)
         {
-            var existing = await Session.Query<Entities.PersistedGrant>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var existing = await Session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
                 .SingleOrDefaultAsync(x => x.Key == token.Key);
+
             if (existing == null)
             {
                 Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
@@ -50,7 +52,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
             try
             {
-                await Session.SaveChangesAsync();
+                await Session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
             }
             catch (Exception ex)
             {
@@ -61,8 +63,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         /// <inheritdoc />
         public virtual async Task<PersistedGrant> GetAsync(string key)
         {
-            var persistedGrant = await Session.Query<Entities.PersistedGrant>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var persistedGrant = await Session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
                 .FirstOrDefaultAsync(x => x.Key == key);
 
             var model = persistedGrant?.ToModel();
@@ -90,7 +91,6 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         public virtual async Task RemoveAsync(string key)
         {
             var persistedGrant = await Session.Query<Entities.PersistedGrant>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
                 .FirstOrDefaultAsync(x => x.Key == key);
 
             if (persistedGrant != null)
@@ -101,7 +101,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
                 try
                 {
-                    await Session.SaveChangesAsync();
+                    await Session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
                 }
                 catch (Exception ex)
                 {
@@ -130,7 +130,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
             try
             {
-                await Session.SaveChangesAsync();
+                await Session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
             }
             catch (Exception ex)
             {
@@ -140,8 +140,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
         private IRavenQueryable<Entities.PersistedGrant> Filter(PersistedGrantFilter filter)
         {
-            var query = Session.Query<Entities.PersistedGrant>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
+            var query = Session.Query<Entities.PersistedGrant, PersistentGrantIndex>();
 
             if (!string.IsNullOrWhiteSpace(filter.ClientId))
             {

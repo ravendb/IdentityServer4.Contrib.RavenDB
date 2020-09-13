@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.RavenDB.Storage.Entities;
+using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.Services;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
@@ -23,8 +24,7 @@ namespace IdentityServer4.RavenDB.Storage.Services
         /// <inheritdoc />
         public async Task<bool> IsOriginAllowedAsync(string origin)
         {
-            var query = Session.Query<Client>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var query = Session.Query<Client, ClientIndex>()
                 .Where(x => x.AllowedCorsOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase));
 
             var isAllowed = await query.AnyAsync();

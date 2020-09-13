@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
+using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.Stores;
 using Microsoft.Extensions.Logging;
@@ -28,8 +29,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         /// <inheritdoc />
         public virtual async Task<Client> FindClientByIdAsync(string clientId)
         {
-            var baseQuery = Session.Query<Entities.Client>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var baseQuery = Session.Query<Entities.Client, ClientIndex>()
                 .Where(x => x.ClientId == clientId)
                 .Take(1);
 

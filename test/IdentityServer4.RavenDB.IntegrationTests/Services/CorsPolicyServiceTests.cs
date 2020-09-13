@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
+using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Services;
 using Xunit;
@@ -16,6 +17,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Services
             const string testCorsOrigin = "https://identityserver.io/";
 
             using var store = GetDocumentStore();
+            await new ClientIndex().ExecuteAsync(store);
 
             using (var session = store.OpenAsyncSession())
             {
@@ -36,8 +38,9 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Services
                 await session.SaveChangesAsync();
             }
 
-            bool result;
+            WaitForIndexing(store);
 
+            bool result;
             using (var session = store.OpenAsyncSession())
             {
                 var service = new CorsPolicyService(session, FakeLogger<CorsPolicyService>.Create());
@@ -51,6 +54,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Services
         public async Task IsOriginAllowedAsync_WhenOriginIsNotAllowed_ExpectFalse()
         {
             using var store = GetDocumentStore();
+            await new ClientIndex().ExecuteAsync(store);
 
             using (var session = store.OpenAsyncSession())
             {
@@ -63,6 +67,8 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Services
 
                 await session.SaveChangesAsync();
             }
+
+            WaitForIndexing(store);
 
             bool result;
             using (var session = store.OpenAsyncSession())

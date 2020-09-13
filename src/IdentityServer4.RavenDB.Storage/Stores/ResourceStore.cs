@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
+using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.Stores;
 using Microsoft.Extensions.Logging;
@@ -34,8 +35,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
-            var query = Session.Query<Entities.IdentityResource>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var query = Session.Query<Entities.IdentityResource, IdentityResourceIndex>()
                 .Where(identityResource => identityResource.Name.In(scopeNames));
 
             IdentityResource[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
@@ -53,12 +53,11 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         }
 
         /// <inheritdoc />
-        public virtual async Task<IEnumerable<Models.ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
+        public virtual async Task<IEnumerable<ApiScope>> FindApiScopesByNameAsync(IEnumerable<string> scopeNames)
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
-            var query = Session.Query<Entities.ApiScope>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var query = Session.Query<Entities.ApiScope, ApiResourceIndex>()
                 .Where(apiScope => apiScope.Name.In(scopeNames));
 
             Models.ApiScope[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
@@ -80,9 +79,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
-            var query =
-                Session.Query<Entities.ApiResource>()
-                    .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var query = Session.Query<Entities.ApiResource, ApiResourceIndex>()
                     .Where(apiResource => apiResource.Scopes.Any(x => x.In(scopeNames)));
 
             var result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
@@ -104,9 +101,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
-            var query =
-                Session.Query<Entities.ApiResource>()
-                    .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var query = Session.Query<Entities.ApiResource, ApiResourceIndex>()
                     .Where(apiResource => apiResource.Name.In(apiResourceNames));
 
             ApiResource[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
@@ -126,17 +121,11 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         /// <inheritdoc />
         public virtual async Task<Resources> GetAllResourcesAsync()
         {
-            var identity = Session
-                .Query<Entities.IdentityResource>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
+            var identity = Session.Query<Entities.IdentityResource>();
 
-            var apiResources = Session
-                .Query<Entities.ApiResource>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
+            var apiResources = Session.Query<Entities.ApiResource>();
 
-            var apiScopes = Session
-                .Query<Entities.ApiScope>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
+            var apiScopes = Session.Query<Entities.ApiScope>();
 
             var result = new Resources(
                 (await identity.ToArrayAsync()).Select(x => x.ToModel()),
