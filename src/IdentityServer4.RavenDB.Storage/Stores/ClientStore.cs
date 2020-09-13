@@ -29,11 +29,8 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         /// <inheritdoc />
         public virtual async Task<Client> FindClientByIdAsync(string clientId)
         {
-            var baseQuery = Session.Query<Entities.Client, ClientIndex>()
-                .Where(x => x.ClientId == clientId)
-                .Take(1);
+            var client = await Session.LoadAsync<Entities.Client>(clientId);
 
-            var client = await baseQuery.FirstOrDefaultAsync();
             if (client == null) return null;
 
             var model = client.ToModel();

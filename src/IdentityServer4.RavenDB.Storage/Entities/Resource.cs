@@ -13,7 +13,13 @@ namespace IdentityServer4.RavenDB.Storage.Entities
 
         public string Id { get; set; }
         public bool Enabled { get; set; } = true;
-        public string Name { get; set; }
+
+        public string Name
+        {
+            get => Id;
+            set => Id = value;
+        }
+
         public string DisplayName { get; set; }
         public string Description { get; set; }
         public bool ShowInDiscoveryDocument { get; set; } = true;

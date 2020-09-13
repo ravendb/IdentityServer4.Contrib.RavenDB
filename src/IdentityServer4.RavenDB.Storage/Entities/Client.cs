@@ -8,7 +8,13 @@ namespace IdentityServer4.RavenDB.Storage.Entities
     {
         public string Id { get; set; }
         public bool Enabled { get; set; } = true;
-        public string ClientId { get; set; }
+
+        public string ClientId
+        {
+            get => Id;
+            set => Id = value;
+        }
+
         public string ProtocolType { get; set; } = "oidc";
         public List<Secret> ClientSecrets { get; set; }
         public bool RequireClientSecret { get; set; } = true;

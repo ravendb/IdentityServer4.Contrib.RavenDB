@@ -35,10 +35,9 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
-            var query = Session.Query<Entities.IdentityResource, IdentityResourceIndex>()
-                .Where(identityResource => identityResource.Name.In(scopeNames));
+            var identityResources = await Session.LoadAsync<Entities.IdentityResource>(scopeNames);
 
-            IdentityResource[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
+            IdentityResource[] result = identityResources.Values.Select(x => x.ToModel()).ToArray();
 
             if (result.Any())
             {
@@ -57,10 +56,9 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
-            var query = Session.Query<Entities.ApiScope, ApiResourceIndex>()
-                .Where(apiScope => apiScope.Name.In(scopeNames));
+            var scopes = await Session.LoadAsync<Entities.ApiScope>(scopeNames);
 
-            Models.ApiScope[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
+            ApiScope[] result = scopes.Values.Select(x => x.ToModel()).ToArray();
 
             if (result.Any())
             {
@@ -80,7 +78,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
             var query = Session.Query<Entities.ApiResource, ApiResourceIndex>()
-                    .Where(apiResource => apiResource.Scopes.Any(x => x.In(scopeNames)));
+                    .Where(apiResource => apiResource.Scopes.ContainsAny(scopeNames));
 
             var result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
 
@@ -101,10 +99,9 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
-            var query = Session.Query<Entities.ApiResource, ApiResourceIndex>()
-                    .Where(apiResource => apiResource.Name.In(apiResourceNames));
+            var apiResources = await Session.LoadAsync<Entities.ApiResource>(apiResourceNames);
 
-            ApiResource[] result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
+            ApiResource[] result = apiResources.Values.Select(x => x.ToModel()).ToArray();
 
             if (result.Any())
             {
