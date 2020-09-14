@@ -14,11 +14,11 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// </summary>
         public ScopeMapperProfile()
         {
-            //CreateMap<ApiScope, Models.ApiScope>(MemberList.Destination)
-            //    .ConstructUsing(src => new Models.ApiScope())
-            //    .ForMember(x => x.Properties, opts => opts.MapFrom(x => x.Properties))
-            //    .ForMember(x => x.UserClaims, opts => opts.MapFrom(x => x.UserClaims))
-            //    .ReverseMap();
+            CreateMap<ApiScope, Models.ApiScope>(MemberList.Destination)
+                .ConstructUsing(src => new Models.ApiScope())
+                .ForMember(x => x.Properties, opts => opts.MapFrom(x => x.Properties))
+                .ForMember(x => x.UserClaims, opts => opts.MapFrom(x => x.UserClaims))
+                .ReverseMap();
         }
     }
 }

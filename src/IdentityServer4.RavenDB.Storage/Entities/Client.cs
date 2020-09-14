@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using IdentityServer4.Models;
-using ClientClaim = IdentityServer4.RavenDB.Storage.Entities.ClientClaim;
-using Secret = IdentityServer4.RavenDB.Storage.Entities.Secret;
 
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
@@ -10,7 +8,13 @@ namespace IdentityServer4.RavenDB.Storage.Entities
     {
         public string Id { get; set; }
         public bool Enabled { get; set; } = true;
-        public string ClientId { get; set; }
+
+        public string ClientId
+        {
+            get => Id;
+            set => Id = value;
+        }
+
         public string ProtocolType { get; set; } = "oidc";
         public List<Secret> ClientSecrets { get; set; }
         public bool RequireClientSecret { get; set; } = true;
@@ -35,7 +39,7 @@ namespace IdentityServer4.RavenDB.Storage.Entities
         public bool AllowOfflineAccess { get; set; }
         public List<string> AllowedScopes { get; set; }
         public int IdentityTokenLifetime { get; set; } = 300;
-        public string AllowedIdentityTokenSigningAlgorithms { get; set; }
+        public List<string> AllowedIdentityTokenSigningAlgorithms { get; set; }
         public int AccessTokenLifetime { get; set; } = 3600;
         public int AuthorizationCodeLifetime { get; set; } = 300;
         public int? ConsentLifetime { get; set; } = null;
@@ -44,7 +48,7 @@ namespace IdentityServer4.RavenDB.Storage.Entities
         public int RefreshTokenUsage { get; set; } = (int)TokenUsage.OneTimeOnly;
         public bool UpdateAccessTokenClaimsOnRefresh { get; set; }
         public int RefreshTokenExpiration { get; set; } = (int)TokenExpiration.Absolute;
-        public int AccessTokenType { get; set; } = (int)0; // AccessTokenType.Jwt;
+        public int AccessTokenType { get; set; } = 0; // AccessTokenType.Jwt;
         public bool EnableLocalLogin { get; set; } = true;
         public List<string> IdentityProviderRestrictions { get; set; }
         public bool IncludeJwtId { get; set; }

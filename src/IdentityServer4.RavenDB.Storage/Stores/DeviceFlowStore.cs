@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IdentityModel;
+using IdentityServer4.Contrib.RavenDB.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.Entities;
+using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.Stores;
 using IdentityServer4.Stores.Serialization;
 using Microsoft.Extensions.Logging;
@@ -17,12 +19,6 @@ namespace IdentityServer4.RavenDB.Storage.Stores
     /// <seealso cref="IdentityServer4.Stores.IDeviceFlowStore" />
     public class DeviceFlowStore : IDeviceFlowStore
     {
-        protected readonly IAsyncDocumentSession Session;
-
-        protected readonly ILogger<DeviceFlowStore> Logger;
-
-        protected readonly IPersistentGrantSerializer Serializer;
-
         public DeviceFlowStore(
             IAsyncDocumentSession session,
             IPersistentGrantSerializer serializer,
@@ -33,27 +29,32 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             Logger = logger;
         }
 
+        protected IAsyncDocumentSession Session { get; }
+        protected ILogger<DeviceFlowStore> Logger { get; }
+        protected IPersistentGrantSerializer Serializer { get; }
+
+        /// <inheritdoc />
         public virtual async Task StoreDeviceAuthorizationAsync(string deviceCode, string userCode, DeviceCode data)
         {
-            var device = await this.FindByDeviceCodeAsync(deviceCode);
+            var device = await FindByDeviceCodeAsync(deviceCode);
             if (device != null)
                 throw new Exception($"device code {deviceCode} is already registered");
 
-            device = await this.FindByUserCodeAsync(userCode);
+            device = await FindByUserCodeAsync(userCode);
             if (device != null)
                 throw new Exception($"user code {userCode} is already registered");
 
             await Session.StoreAsync(ToEntity(data, deviceCode, userCode));
 
-            await Session.SaveChangesAsync();
+            await Session.WaitForIndexAndSaveChangesAsync<DeviceFlowCodeIndex>();
         }
 
+        /// <inheritdoc />
         public virtual async Task<DeviceCode> FindByUserCodeAsync(string userCode)
         {
-            var deviceFlowCodes = await Session.Query<DeviceFlowCode>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var deviceFlowCodes = await Session.Query<DeviceFlowCode, DeviceFlowCodeIndex>()
                 .FirstOrDefaultAsync(x => x.UserCode == userCode);
-            
+
             var model = ToModel(deviceFlowCodes?.Data);
 
             Logger.LogDebug("{userCode} found in database: {userCodeFound}", userCode, model != null);
@@ -61,12 +62,12 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             return model;
         }
 
+        /// <inheritdoc />
         public virtual async Task<DeviceCode> FindByDeviceCodeAsync(string deviceCode)
         {
-            var deviceFlowCodes = await Session.Query<DeviceFlowCode>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var deviceFlowCodes = await Session.Query<DeviceFlowCode, DeviceFlowCodeIndex>()
                 .FirstOrDefaultAsync(x => x.DeviceCode == deviceCode);
-            
+
             var model = ToModel(deviceFlowCodes?.Data);
 
             Logger.LogDebug("{deviceCode} found in database: {deviceCodeFound}", deviceCode, model != null);
@@ -74,11 +75,12 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             return model;
         }
 
+        /// <inheritdoc />
         public virtual async Task UpdateByUserCodeAsync(string userCode, DeviceCode data)
         {
-            var existing = await Session.Query<DeviceFlowCode>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var existing = await Session.Query<DeviceFlowCode, DeviceFlowCodeIndex>()
                 .SingleOrDefaultAsync(x => x.UserCode == userCode);
+
             if (existing == null)
             {
                 Logger.LogError("{userCode} not found in database", userCode);
@@ -93,7 +95,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
             try
             {
-                await Session.SaveChangesAsync();
+                await Session.WaitForIndexAndSaveChangesAsync<DeviceFlowCodeIndex>();
             }
             catch (Exception ex)
             {
@@ -101,10 +103,10 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             }
         }
 
+        /// <inheritdoc />
         public virtual async Task RemoveByDeviceCodeAsync(string deviceCode)
         {
-            var deviceFlowCode = await Session.Query<DeviceFlowCode>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var deviceFlowCode = await Session.Query<DeviceFlowCode, DeviceFlowCodeIndex>()
                 .FirstOrDefaultAsync(x => x.DeviceCode == deviceCode);
 
             if (deviceFlowCode != null)
@@ -115,7 +117,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
                 try
                 {
-                    await Session.SaveChangesAsync();
+                    await Session.WaitForIndexAndSaveChangesAsync<DeviceFlowCodeIndex>();
                 }
                 catch (Exception ex)
                 {

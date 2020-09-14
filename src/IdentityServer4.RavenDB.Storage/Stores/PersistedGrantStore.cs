@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentityServer4.Contrib.RavenDB.Extensions;
+using IdentityServer4.Extensions;
 using IdentityServer4.Models;
+using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.Stores;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
+using Raven.Client.Documents.Linq;
 using Raven.Client.Documents.Session;
 
 namespace IdentityServer4.RavenDB.Storage.Stores
@@ -17,21 +21,21 @@ namespace IdentityServer4.RavenDB.Storage.Stores
     /// <seealso cref="IdentityServer4.Stores.IPersistedGrantStore" />
     public class PersistedGrantStore : IPersistedGrantStore
     {
-        protected readonly IAsyncDocumentSession Session;
-
-        protected readonly ILogger<PersistedGrantStore> Logger;
-
         public PersistedGrantStore(IAsyncDocumentSession session, ILogger<PersistedGrantStore> logger)
         {
             Session = session;
             Logger = logger;
         }
 
+        protected IAsyncDocumentSession Session { get; }
+        protected ILogger<PersistedGrantStore> Logger { get; }
+
+        /// <inheritdoc />
         public virtual async Task StoreAsync(PersistedGrant token)
         {
-            var existing = await Session.Query<Entities.PersistedGrant>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var existing = await Session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
                 .SingleOrDefaultAsync(x => x.Key == token.Key);
+
             if (existing == null)
             {
                 Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
@@ -48,7 +52,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
             try
             {
-                await Session.SaveChangesAsync();
+                await Session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
             }
             catch (Exception ex)
             {
@@ -56,12 +60,12 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             }
         }
 
+        /// <inheritdoc />
         public virtual async Task<PersistedGrant> GetAsync(string key)
         {
-            var persistedGrant = await Session.Query<Entities.PersistedGrant>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
+            var persistedGrant = await Session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
                 .FirstOrDefaultAsync(x => x.Key == key);
-            
+
             var model = persistedGrant?.ToModel();
 
             Logger.LogDebug("{persistedGrantKey} found in database: {persistedGrantKeyFound}", key, model != null);
@@ -69,24 +73,24 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             return model;
         }
 
-        public virtual async Task<IEnumerable<PersistedGrant>> GetAllAsync(string subjectId)
+        /// <inheritdoc />
+        public virtual async Task<IEnumerable<PersistedGrant>> GetAllAsync(PersistedGrantFilter filter)
         {
-            var persistedGrants = await Session.Query<Entities.PersistedGrant>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
-                .Where(x => x.SubjectId == subjectId)
-                .ToListAsync();
+            filter.Validate();
+
+            var persistedGrants = await Filter(filter).ToListAsync();
 
             var model = persistedGrants.Select(x => x.ToModel());
 
-            Logger.LogDebug("{persistedGrantCount} persisted grants found for {subjectId}", persistedGrants.Count, subjectId);
+            Logger.LogDebug("{persistedGrantCount} persisted grants", persistedGrants.Count);
 
             return model;
         }
 
+        /// <inheritdoc />
         public virtual async Task RemoveAsync(string key)
         {
             var persistedGrant = await Session.Query<Entities.PersistedGrant>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
                 .FirstOrDefaultAsync(x => x.Key == key);
 
             if (persistedGrant != null)
@@ -97,11 +101,11 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
                 try
                 {
-                    await Session.SaveChangesAsync();
+                    await Session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogInformation("exception removing {persistedGrantKey} persisted grant from database: {error}", key, ex.Message);
+                    Logger.LogError("exception removing {persistedGrantKey} persisted grant from database: {error}", key, ex.Message);
                 }
             }
             else
@@ -110,14 +114,14 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             }
         }
 
-        public virtual async Task RemoveAllAsync(string subjectId, string clientId)
+        /// <inheritdoc />
+        public virtual async Task RemoveAllAsync(PersistedGrantFilter filter)
         {
-            var persistedGrants = await Session.Query<Entities.PersistedGrant>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
-                .Where(x => x.SubjectId == subjectId && x.ClientId == clientId)
-                .ToListAsync();
+            filter.Validate();
 
-            Logger.LogDebug("removing {persistedGrantCount} persisted grants from database for subject {subjectId}, clientId {clientId}", persistedGrants.Count, subjectId, clientId);
+            var persistedGrants = await Filter(filter).ToListAsync();
+
+            Logger.LogDebug("removing {persistedGrantCount} persisted grants from database", persistedGrants.Count);
 
             foreach (var persistedGrant in persistedGrants)
             {
@@ -126,36 +130,36 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
             try
             {
-                await Session.SaveChangesAsync();
+                await Session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
             }
             catch (Exception ex)
             {
-                Logger.LogInformation("removing {persistedGrantCount} persisted grants from database for subject {subjectId}, clientId {clientId}: {error}", persistedGrants.Count, subjectId, clientId, ex.Message);
+                Logger.LogError("removing {persistedGrantCount} persisted grants from database: {error}", persistedGrants.Count, ex.Message);
             }
         }
 
-        public virtual async Task RemoveAllAsync(string subjectId, string clientId, string type)
+        private IRavenQueryable<Entities.PersistedGrant> Filter(PersistedGrantFilter filter)
         {
-            var persistedGrants = await Session.Query<Entities.PersistedGrant>()
-                .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)))
-                .Where(x => x.SubjectId == subjectId && x.ClientId == clientId)
-                .ToListAsync();
+            var query = Session.Query<Entities.PersistedGrant, PersistentGrantIndex>();
 
-            Logger.LogDebug("removing {persistedGrantCount} persisted grants from database for subject {subjectId}, clientId {clientId}", persistedGrants.Count, subjectId, clientId);
-
-            foreach (var persistedGrant in persistedGrants)
+            if (!string.IsNullOrWhiteSpace(filter.ClientId))
             {
-                Session.Delete(persistedGrant);
+                query = query.Where(x => x.ClientId == filter.ClientId);
+            }
+            if (!string.IsNullOrWhiteSpace(filter.SessionId))
+            {
+                query = query.Where(x => x.SessionId == filter.SessionId);
+            }
+            if (!string.IsNullOrWhiteSpace(filter.SubjectId))
+            {
+                query = query.Where(x => x.SubjectId == filter.SubjectId);
+            }
+            if (!string.IsNullOrWhiteSpace(filter.Type))
+            {
+                query = query.Where(x => x.Type == filter.Type);
             }
 
-            try
-            {
-                await Session.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogInformation("removing {persistedGrantCount} persisted grants from database for subject {subjectId}, clientId {clientId}: {error}", persistedGrants.Count, subjectId, clientId, ex.Message);
-            }
+            return query;
         }
     }
 }
