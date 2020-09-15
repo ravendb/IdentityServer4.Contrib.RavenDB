@@ -13,5 +13,7 @@ namespace IdentityServer4.RavenDB.Storage.Entities
         public DateTime? Updated { get; set; }
 
         public bool NonEditable { get; set; }
+
+        protected override string FormatDocumentId(string name) => "IdentityResources/" + name;
     }
 }
