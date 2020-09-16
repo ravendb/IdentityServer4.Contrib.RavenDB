@@ -35,9 +35,11 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
-            var identityResources = await Session.LoadAsync<Entities.IdentityResource>(scopeNames);
+            var identityResources = await Session.Query<Entities.IdentityResource, IdentityResourceIndex>()
+                .Where(x => x.Name.In(scopeNames))
+                .ToArrayAsync();
 
-            IdentityResource[] result = identityResources.Values.Select(x => x.ToModel()).ToArray();
+            IdentityResource[] result = identityResources.Select(x => x.ToModel()).ToArray();
 
             if (result.Any())
             {
@@ -56,9 +58,11 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
-            var scopes = await Session.LoadAsync<Entities.ApiScope>(scopeNames);
+            var scopes = await Session.Query<Entities.ApiScope, ApiScopeIndex>()
+                .Where(x => x.Name.In(scopeNames))
+                .ToArrayAsync();
 
-            ApiScope[] result = scopes.Values.Select(x => x.ToModel()).ToArray();
+            ApiScope[] result = scopes.Select(x => x.ToModel()).ToArray();
 
             if (result.Any())
             {
@@ -77,10 +81,11 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             if (scopeNames == null) throw new ArgumentNullException(nameof(scopeNames));
 
-            var query = Session.Query<Entities.ApiResource, ApiResourceIndex>()
-                    .Where(apiResource => apiResource.Scopes.ContainsAny(scopeNames));
+            var apiResources = await Session.Query<Entities.ApiResource, ApiResourceIndex>()
+                    .Where(apiResource => apiResource.Scopes.ContainsAny(scopeNames))
+                    .ToArrayAsync();
 
-            var result = (await query.ToArrayAsync()).Select(x => x.ToModel()).ToArray();
+            var result = apiResources.Select(x => x.ToModel()).ToArray();
 
             if (result.Any())
             {
@@ -99,9 +104,11 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             if (apiResourceNames == null) throw new ArgumentNullException(nameof(apiResourceNames));
 
-            var apiResources = await Session.LoadAsync<Entities.ApiResource>(apiResourceNames);
+            var apiResources = await Session.Query<Entities.ApiResource, ApiResourceIndex>()
+                .Where(x => x.Name.In(apiResourceNames))
+                .ToArrayAsync();
 
-            ApiResource[] result = apiResources.Values.Select(x => x.ToModel()).ToArray();
+            ApiResource[] result = apiResources.Select(x => x.ToModel()).ToArray();
 
             if (result.Any())
             {

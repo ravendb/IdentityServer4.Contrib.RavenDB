@@ -70,14 +70,19 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 session.Store(resource.ToEntity());
                 session.SaveChanges();
             }
-            
+
             WaitForIndexing(ravenStore);
 
             ApiResource foundResource;
             using (var session = ravenStore.OpenAsyncSession())
             {
                 var store = new ResourceStore(session, FakeLogger<ResourceStore>.Create());
-                foundResource = (await store.FindApiResourcesByNameAsync(new[] {resource.Name})).SingleOrDefault();
+                var apiResourceNames = new[]
+                {
+                    resource.Name,
+                    "non-existent"
+                };
+                foundResource = (await store.FindApiResourcesByNameAsync(apiResourceNames)).SingleOrDefault();
             }
 
             Assert.NotNull(foundResource);
@@ -105,7 +110,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 session.Store(CreateApiResourceTestResource().ToEntity());
                 session.SaveChanges();
             }
-            
+
             WaitForIndexing(ravenStore);
 
             ApiResource foundResource;
@@ -126,6 +131,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
             Assert.NotEmpty(foundResource.Scopes);
         }
 
+
         [Fact]
         public async Task FindApiResourcesByScopeNameAsync_WhenResourcesExist_ExpectResourcesReturned()
         {
@@ -142,7 +148,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 //session.Store(testApiScope.ToEntity());
                 session.SaveChanges();
             }
-            
+
             WaitForIndexing(ravenStore);
 
             IEnumerable<ApiResource> resources;
@@ -181,7 +187,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 //session.Store(CreateApiScopeTestResource().ToEntity());
                 session.SaveChanges();
             }
-            
+
             WaitForIndexing(ravenStore);
 
             IEnumerable<ApiResource> resources;
@@ -209,7 +215,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 session.Store(resource.ToEntity());
                 session.SaveChanges();
             }
-            
+
             WaitForIndexing(ravenStore);
 
             IList<IdentityResource> resources;
@@ -218,7 +224,8 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 var store = new ResourceStore(session, FakeLogger<ResourceStore>.Create());
                 resources = (await store.FindIdentityResourcesByScopeNameAsync(new List<string>
                 {
-                    resource.Name
+                    resource.Name,
+                    "non-existent"
                 })).ToList();
             }
 
@@ -245,7 +252,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 session.Store(CreateIdentityTestResource().ToEntity());
                 session.SaveChanges();
             }
-            
+
             WaitForIndexing(ravenStore);
 
             IList<IdentityResource> resources;
@@ -263,68 +270,73 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
             Assert.NotNull(resources.Single(x => x.Name == resource.Name));
         }
 
+
         [Fact]
         public async Task FindApiScopesByNameAsync_WhenResourceExists_ExpectResourceAndCollectionsReturned()
         {
             using var ravenStore = GetDocumentStore();
-            await new ApiResourceIndex().ExecuteAsync(ravenStore);
+            await new ApiScopeIndex().ExecuteAsync(ravenStore);
 
             var resource = CreateApiScopeTestResource();
 
             using (var session = ravenStore.OpenSession())
             {
-                //session.Store(resource.ToEntity());
+                session.Store(resource.ToEntity());
                 session.SaveChanges();
             }
+
+            WaitForIndexing(ravenStore);
 
             IList<ApiScope> resources;
             using (var session = ravenStore.OpenAsyncSession())
             {
                 var store = new ResourceStore(session, FakeLogger<ResourceStore>.Create());
-                //resources = (await store.FindApiScopesByNameAsync(new List<string>
-                //{
-                //    resource.Name
-                //})).ToList();
+                resources = (await store.FindApiScopesByNameAsync(new List<string>
+                {
+                    resource.Name,
+                    "non-existent"
+                })).ToList();
             }
 
-            //Assert.NotNull(resources);
-            //Assert.NotEmpty(resources);
-            //var foundScope = resources.Single();
+            Assert.NotNull(resources);
+            Assert.NotEmpty(resources);
+            var foundScope = resources.Single();
 
-            //Assert.Equal(resource.Name, foundScope.Name);
-            //Assert.NotNull(foundScope.UserClaims);
-            //Assert.NotEmpty(foundScope.UserClaims);
+            Assert.Equal(resource.Name, foundScope.Name);
+            Assert.NotNull(foundScope.UserClaims);
+            Assert.NotEmpty(foundScope.UserClaims);
         }
-
 
         [Fact]
         public async Task FindApiScopesByNameAsync_WhenResourcesExist_ExpectOnlyRequestedReturned()
         {
             using var ravenStore = GetDocumentStore();
-            await new ApiResourceIndex().ExecuteAsync(ravenStore);
-            
+            await new ApiScopeIndex().ExecuteAsync(ravenStore);
             var resource = CreateApiScopeTestResource();
 
             using (var session = ravenStore.OpenSession())
             {
-                //session.Store(resource.ToEntity());
-                //session.Store(CreateApiScopeTestResource().ToEntity());
+                session.Store(resource.ToEntity());
+                session.Store(CreateApiScopeTestResource().ToEntity());
                 session.SaveChanges();
             }
+
+            WaitForIndexing(ravenStore);
 
             IList<ApiScope> resources;
             using (var session = ravenStore.OpenAsyncSession())
             {
                 var store = new ResourceStore(session, FakeLogger<ResourceStore>.Create());
-                //resources = (await store.FindApiScopesByNameAsync(new List<string>
-                //{
-                //    resource.Name
-                //})).ToList();
+                resources = (await store.FindApiScopesByNameAsync(new List<string>
+                {
+                    resource.Name,
+                    "non-existent"
+                })).ToList();
             }
 
-            //Assert.NotNull(resources);
-            //Assert.NotEmpty(resources);
-            //Assert.NotNull(resources.Single(x => x.Name == resource.Name));
+            Assert.NotNull(resources);
+            Assert.NotEmpty(resources);
+            Assert.NotNull(resources.Single(x => x.Name == resource.Name));
         }
 
         [Fact]
