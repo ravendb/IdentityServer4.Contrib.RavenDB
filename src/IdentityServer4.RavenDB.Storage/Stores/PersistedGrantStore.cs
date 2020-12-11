@@ -90,7 +90,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         /// <inheritdoc />
         public virtual async Task RemoveAsync(string key)
         {
-            var persistedGrant = await Session.Query<Entities.PersistedGrant>()
+            var persistedGrant = await Session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
                 .FirstOrDefaultAsync(x => x.Key == key);
 
             if (persistedGrant != null)
