@@ -10,7 +10,6 @@ namespace IdentityServer4.Contrib.RavenDB.Extensions
         {
             session.Advanced.WaitForIndexesAfterSaveChanges(indexes: new [] { typeof(T).Name });
             return session.SaveChangesAsync();
-
         }
     }
 }

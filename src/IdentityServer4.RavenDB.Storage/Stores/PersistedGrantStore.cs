@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using IdentityServer4.Contrib.RavenDB.Extensions;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
+using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.Stores;
@@ -19,58 +20,66 @@ namespace IdentityServer4.RavenDB.Storage.Stores
     /// Implementation of IPersistedGrantStore that uses RavenDB.
     /// </summary>
     /// <seealso cref="IdentityServer4.Stores.IPersistedGrantStore" />
-    public class PersistedGrantStore : IPersistedGrantStore
+    internal class PersistedGrantStore : IPersistedGrantStore
     {
-        public PersistedGrantStore(IAsyncDocumentSession session, ILogger<PersistedGrantStore> logger)
+        private readonly IOperationalDocumentStoreHolder _documentStoreHolder;
+        
+        public PersistedGrantStore(IOperationalDocumentStoreHolder documentStoreHolder, ILogger<PersistedGrantStore> logger)
         {
-            Session = session;
+            _documentStoreHolder = documentStoreHolder;
             Logger = logger;
         }
 
-        protected IAsyncDocumentSession Session { get; }
+        private IAsyncDocumentSession OpenAsyncSession() => _documentStoreHolder.OpenAsyncSession();
         protected ILogger<PersistedGrantStore> Logger { get; }
 
         /// <inheritdoc />
         public virtual async Task StoreAsync(PersistedGrant token)
         {
-            var existing = await Session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
-                .SingleOrDefaultAsync(x => x.Key == token.Key);
-
-            if (existing == null)
+            using (var session = OpenAsyncSession())
             {
-                Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
+                var existing = await session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
+                    .SingleOrDefaultAsync(x => x.Key == token.Key);
 
-                var persistedGrant = token.ToEntity();
-                await Session.StoreAsync(persistedGrant);
-            }
-            else
-            {
-                Logger.LogDebug("{persistedGrantKey} found in database", token.Key);
+                if (existing == null)
+                {
+                    Logger.LogDebug("{persistedGrantKey} not found in database", token.Key);
 
-                token.UpdateEntity(existing);
-            }
+                    var persistedGrant = token.ToEntity();
+                    await session.StoreAsync(persistedGrant);
+                }
+                else
+                {
+                    Logger.LogDebug("{persistedGrantKey} found in database", token.Key);
 
-            try
-            {
-                await Session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning("exception updating {persistedGrantKey} persisted grant in database: {error}", token.Key, ex.Message);
+                    token.UpdateEntity(existing);
+                }
+
+                try
+                {
+                    await session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning("exception updating {persistedGrantKey} persisted grant in database: {error}", token.Key, ex.Message);
+                }
             }
         }
 
         /// <inheritdoc />
         public virtual async Task<PersistedGrant> GetAsync(string key)
         {
-            var persistedGrant = await Session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
-                .FirstOrDefaultAsync(x => x.Key == key);
+            using (var session = OpenAsyncSession())
+            {
+                var persistedGrant = await session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
+                    .FirstOrDefaultAsync(x => x.Key == key);
 
-            var model = persistedGrant?.ToModel();
+                var model = persistedGrant?.ToModel();
 
-            Logger.LogDebug("{persistedGrantKey} found in database: {persistedGrantKeyFound}", key, model != null);
+                Logger.LogDebug("{persistedGrantKey} found in database: {persistedGrantKeyFound}", key, model != null);
 
-            return model;
+                return model;
+            }
         }
 
         /// <inheritdoc />
@@ -78,39 +87,45 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             filter.Validate();
 
-            var persistedGrants = await Filter(filter).ToListAsync();
+            using (var session = OpenAsyncSession())
+            {
+                var persistedGrants = await Filter(filter, session).ToListAsync();
 
-            var model = persistedGrants.Select(x => x.ToModel());
+                var model = persistedGrants.Select(x => x.ToModel());
 
-            Logger.LogDebug("{persistedGrantCount} persisted grants", persistedGrants.Count);
+                Logger.LogDebug("{persistedGrantCount} persisted grants", persistedGrants.Count);
 
-            return model;
+                return model;
+            }
         }
 
         /// <inheritdoc />
         public virtual async Task RemoveAsync(string key)
         {
-            var persistedGrant = await Session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
-                .FirstOrDefaultAsync(x => x.Key == key);
-
-            if (persistedGrant != null)
+            using (var session = OpenAsyncSession())
             {
-                Logger.LogDebug("removing {persistedGrantKey} persisted grant from database", key);
+                var persistedGrant = await session.Query<Entities.PersistedGrant, PersistentGrantIndex>()
+                    .FirstOrDefaultAsync(x => x.Key == key);
 
-                Session.Delete(persistedGrant);
+                if (persistedGrant != null)
+                {
+                    Logger.LogDebug("removing {persistedGrantKey} persisted grant from database", key);
 
-                try
-                {
-                    await Session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
+                    session.Delete(persistedGrant);
+
+                    try
+                    {
+                        await session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("exception removing {persistedGrantKey} persisted grant from database: {error}", key, ex.Message);
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    Logger.LogError("exception removing {persistedGrantKey} persisted grant from database: {error}", key, ex.Message);
+                    Logger.LogDebug("no {persistedGrantKey} persisted grant found in database", key);
                 }
-            }
-            else
-            {
-                Logger.LogDebug("no {persistedGrantKey} persisted grant found in database", key);
             }
         }
 
@@ -119,28 +134,31 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             filter.Validate();
 
-            var persistedGrants = await Filter(filter).ToListAsync();
-
-            Logger.LogDebug("removing {persistedGrantCount} persisted grants from database", persistedGrants.Count);
-
-            foreach (var persistedGrant in persistedGrants)
+            using (var session = OpenAsyncSession())
             {
-                Session.Delete(persistedGrant);
-            }
+                var persistedGrants = await Filter(filter, session).ToListAsync();
 
-            try
-            {
-                await Session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("removing {persistedGrantCount} persisted grants from database: {error}", persistedGrants.Count, ex.Message);
+                Logger.LogDebug("removing {persistedGrantCount} persisted grants from database", persistedGrants.Count);
+
+                foreach (var persistedGrant in persistedGrants)
+                {
+                    session.Delete(persistedGrant);
+                }
+
+                try
+                {
+                    await session.WaitForIndexAndSaveChangesAsync<PersistentGrantIndex>();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("removing {persistedGrantCount} persisted grants from database: {error}", persistedGrants.Count, ex.Message);
+                }
             }
         }
 
-        private IRavenQueryable<Entities.PersistedGrant> Filter(PersistedGrantFilter filter)
+        private IRavenQueryable<Entities.PersistedGrant> Filter(PersistedGrantFilter filter, IAsyncDocumentSession session)
         {
-            var query = Session.Query<Entities.PersistedGrant, PersistentGrantIndex>();
+            var query = session.Query<Entities.PersistedGrant, PersistentGrantIndex>();
 
             if (!string.IsNullOrWhiteSpace(filter.ClientId))
             {
