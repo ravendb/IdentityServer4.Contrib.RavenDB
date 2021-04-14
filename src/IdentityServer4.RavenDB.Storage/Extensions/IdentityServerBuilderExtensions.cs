@@ -6,7 +6,7 @@ namespace IdentityServer4.Contrib.RavenDB.Extensions
 {
     public static class IdentityServerBuilderExtensions
     {
-        public static IIdentityServerBuilder AddConfigurationStore(
+        public static IIdentityServerBuilder AddRavenDbConfigurationStore(
             this IIdentityServerBuilder builder)
         {
             builder.AddClientStore<ClientStore>();
@@ -16,7 +16,7 @@ namespace IdentityServer4.Contrib.RavenDB.Extensions
             return builder;
         }
 
-        public static IIdentityServerBuilder AddConfigurationStoreCache(
+        public static IIdentityServerBuilder AddRavenDbConfigurationStoreCache(
             this IIdentityServerBuilder builder)
         {
             builder.AddInMemoryCaching();
@@ -28,7 +28,7 @@ namespace IdentityServer4.Contrib.RavenDB.Extensions
             return builder;
         }
 
-        public static IIdentityServerBuilder AddOperationalStore(this IIdentityServerBuilder builder)
+        public static IIdentityServerBuilder AddRavenDbOperationalStore(this IIdentityServerBuilder builder)
         {
             builder.AddPersistedGrantStore<PersistedGrantStore>();
             builder.AddDeviceFlowStore<DeviceFlowStore>();

@@ -49,7 +49,7 @@ namespace Host
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
             })
-                .AddConfigurationStore()
+                .AddRavenDbConfigurationStore()
                 .AddTestUsers(TestUsers.Users);
 
             // in-memory, code config
