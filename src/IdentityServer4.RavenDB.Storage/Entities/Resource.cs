@@ -1,13 +1,15 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
     /// <summary>
     /// Models the common data of API and identity resources.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public abstract class Resource
+    internal abstract class Resource
     {
         private string name;
 

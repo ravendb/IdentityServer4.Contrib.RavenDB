@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using IdentityServer4.Models;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    public class Client
+    internal class Client
     {
         private string clientId;
         public string Id { get; set; }

@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Session;
 
-namespace IdentityServer4.Contrib.RavenDB.Extensions
+namespace IdentityServer4.RavenDB.Storage.Extensions
 {
     internal static class SessionExtensions
     {

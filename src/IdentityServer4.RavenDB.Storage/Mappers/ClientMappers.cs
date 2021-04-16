@@ -1,8 +1,10 @@
-﻿using AutoMapper;
+﻿using System.Runtime.CompilerServices;
+using AutoMapper;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
-    public static class ClientMappers
+    internal static class ClientMappers
     {
         static ClientMappers()
         {

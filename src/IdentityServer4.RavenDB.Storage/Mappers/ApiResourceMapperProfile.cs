@@ -1,9 +1,11 @@
-﻿using AutoMapper;
+﻿using System.Runtime.CompilerServices;
+using AutoMapper;
 using IdentityServer4.RavenDB.Storage.Entities;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
-    public class ApiResourceMapperProfile : Profile
+    internal class ApiResourceMapperProfile : Profile
     {
         public ApiResourceMapperProfile()
         {

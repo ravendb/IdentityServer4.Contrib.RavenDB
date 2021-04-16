@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using IdentityServer4.Contrib.RavenDB.Extensions;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
+using IdentityServer4.RavenDB.Storage.Extensions;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.Stores;

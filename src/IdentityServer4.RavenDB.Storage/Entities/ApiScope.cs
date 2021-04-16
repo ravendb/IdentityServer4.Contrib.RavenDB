@@ -1,6 +1,9 @@
-﻿namespace IdentityServer4.RavenDB.Storage.Entities
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
+namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    public class ApiScope : Resource
+    internal class ApiScope : Resource
     {
         public bool Required { get; set; }
         public bool Emphasize { get; set; }

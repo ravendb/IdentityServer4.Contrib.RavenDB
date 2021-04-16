@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    public class IdentityResource : Resource
+    internal class IdentityResource : Resource
     {
         public bool Required { get; set; }
 

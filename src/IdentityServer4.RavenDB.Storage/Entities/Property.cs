@@ -1,6 +1,9 @@
-﻿namespace IdentityServer4.RavenDB.Storage.Entities
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
+namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    public class Property
+    internal class Property
     {
         public string Key { get; set; }
 

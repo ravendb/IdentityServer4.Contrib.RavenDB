@@ -1,12 +1,14 @@
-﻿using AutoMapper;
+﻿using System.Runtime.CompilerServices;
+using AutoMapper;
 using IdentityServer4.RavenDB.Storage.Entities;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
     /// <summary>
     /// Extension methods to map to/from entity/model for identity resources.
     /// </summary>
-    public static class IdentityResourceMappers
+    internal static class IdentityResourceMappers
     {
         static IdentityResourceMappers()
         {

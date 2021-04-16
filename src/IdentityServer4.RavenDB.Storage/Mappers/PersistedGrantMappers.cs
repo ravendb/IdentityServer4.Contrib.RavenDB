@@ -1,12 +1,14 @@
-﻿using AutoMapper;
+﻿using System.Runtime.CompilerServices;
+using AutoMapper;
 using IdentityServer4.Models;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
     /// <summary>
     /// Extension methods to map to/from entity/model for persisted grants.
     /// </summary>
-    public static class PersistedGrantMappers
+    internal static class PersistedGrantMappers
     {
         static PersistedGrantMappers()
         {

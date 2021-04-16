@@ -1,8 +1,10 @@
-﻿using System.Security.Claims;
+﻿using System.Runtime.CompilerServices;
+using System.Security.Claims;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    public class ClientClaim
+    internal class ClientClaim
     {
         public string Type { get; set; }
 
