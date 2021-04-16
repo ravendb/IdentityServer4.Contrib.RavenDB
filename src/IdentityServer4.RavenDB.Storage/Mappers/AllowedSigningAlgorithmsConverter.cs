@@ -5,7 +5,7 @@ using AutoMapper;
 
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
-    class AllowedSigningAlgorithmsConverter :
+    internal class AllowedSigningAlgorithmsConverter :
         IValueConverter<ICollection<string>, string>,
         IValueConverter<string, ICollection<string>>
     {

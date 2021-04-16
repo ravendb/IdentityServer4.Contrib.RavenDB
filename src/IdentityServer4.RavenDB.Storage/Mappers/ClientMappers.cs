@@ -6,13 +6,13 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
 {
     internal static class ClientMappers
     {
+        private static readonly IMapper _mapper;
+        
         static ClientMappers()
         {
-            Mapper = new MapperConfiguration(cfg => cfg.AddProfile<ClientMapperProfile>())
+            _mapper = new MapperConfiguration(cfg => cfg.AddProfile<ClientMapperProfile>())
                 .CreateMapper();
         }
-
-        internal static IMapper Mapper { get; }
 
         /// <summary>
         /// Maps an entity to a model.
@@ -21,7 +21,7 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// <returns></returns>
         public static Models.Client ToModel(this Entities.Client entity)
         {
-            return Mapper.Map<Models.Client>(entity);
+            return _mapper.Map<Models.Client>(entity);
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// <returns></returns>
         public static Entities.Client ToEntity(this Models.Client model)
         {
-            return Mapper.Map<Entities.Client>(model);
+            return _mapper.Map<Entities.Client>(model);
         }
     }
 }

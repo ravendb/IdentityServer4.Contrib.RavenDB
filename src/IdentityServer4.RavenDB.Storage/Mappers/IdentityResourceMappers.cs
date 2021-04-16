@@ -10,13 +10,13 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
     /// </summary>
     internal static class IdentityResourceMappers
     {
+        private static readonly IMapper _mapper;
+        
         static IdentityResourceMappers()
         {
-            Mapper = new MapperConfiguration(cfg => cfg.AddProfile<IdentityResourceMapperProfile>())
+            _mapper = new MapperConfiguration(cfg => cfg.AddProfile<IdentityResourceMapperProfile>())
                 .CreateMapper();
         }
-
-        internal static IMapper Mapper { get; }
 
         /// <summary>
         /// Maps an entity to a model.
@@ -25,7 +25,7 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// <returns></returns>
         public static Models.IdentityResource ToModel(this IdentityResource entity)
         {
-            return entity == null ? null : Mapper.Map<Models.IdentityResource>(entity);
+            return entity == null ? null : _mapper.Map<Models.IdentityResource>(entity);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// <returns></returns>
         public static IdentityResource ToEntity(this Models.IdentityResource model)
         {
-            return model == null ? null : Mapper.Map<IdentityResource>(model);
+            return model == null ? null : _mapper.Map<IdentityResource>(model);
         }
     }
 }

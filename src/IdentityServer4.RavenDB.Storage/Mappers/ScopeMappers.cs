@@ -10,13 +10,13 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
     /// </summary>
     internal static class ScopeMappers
     {
+        private static readonly IMapper _mapper;
+        
         static ScopeMappers()
         {
-            Mapper = new MapperConfiguration(cfg => cfg.AddProfile<ScopeMapperProfile>())
+            _mapper = new MapperConfiguration(cfg => cfg.AddProfile<ScopeMapperProfile>())
                 .CreateMapper();
         }
-
-        internal static IMapper Mapper { get; }
 
         /// <summary>
         /// Maps an entity to a model.
@@ -25,7 +25,7 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// <returns></returns>
         public static Models.ApiScope ToModel(this ApiScope entity)
         {
-            return entity == null ? null : Mapper.Map<IdentityServer4.Models.ApiScope>(entity);
+            return entity == null ? null : _mapper.Map<IdentityServer4.Models.ApiScope>(entity);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// <returns></returns>
         public static ApiScope ToEntity(this Models.ApiScope model)
         {
-            return model == null ? null : Mapper.Map<ApiScope>(model);
+            return model == null ? null : _mapper.Map<ApiScope>(model);
         }
     }
 }
