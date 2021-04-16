@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Helpers
 {
     internal static class IndexHelper
@@ -17,7 +19,7 @@ namespace IdentityServer4.RavenDB.Storage.Helpers
         
         public static readonly IReadOnlyList<AbstractIndexCreationTask> OperationalStoreIndexes = new List<AbstractIndexCreationTask>
         {
-            new PersistentGrantIndex(), 
+            new PersistedGrantIndex(), 
             new DeviceFlowCodeIndex(),
         };
         
