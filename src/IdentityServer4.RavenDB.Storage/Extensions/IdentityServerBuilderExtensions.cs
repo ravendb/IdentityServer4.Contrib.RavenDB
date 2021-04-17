@@ -30,7 +30,7 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
         {
             var services = builder.Services;
             
-            if (services.Any(x => x.ServiceType == typeof(IConfigurationDocumentStoreHolder) == false))
+            if (services.Any(x => x.ServiceType == typeof(IConfigurationDocumentStoreHolder)) == false)
             {
                 throw new InvalidOperationException($"{nameof(AddRavenDbConfigurationStore)} extension method must be called before {nameof(AddRavenDbConfigurationStoreCache)} can be configured.");
             }
