@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using AutoMapper;
+using IdentityServer4.RavenDB.Storage.Helpers;
 
 [assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Mappers
@@ -17,7 +18,9 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         public PersistedGrantMapperProfile()
         {
             CreateMap<Entities.PersistedGrant, Models.PersistedGrant>(MemberList.Destination)
-                .ReverseMap();
+                .ReverseMap()
+                .ForMember(x => x.Key, options => 
+                    options.MapFrom(x => CryptographyHelper.CreateHash(x.Key)));
         }
     }
 }

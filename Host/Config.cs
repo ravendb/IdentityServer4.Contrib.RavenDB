@@ -4,6 +4,7 @@
 
 using IdentityServer4.Models;
 using System.Collections.Generic;
+using IdentityServer4.RavenDB.Storage.Helpers;
 
 namespace Host
 {
@@ -34,7 +35,7 @@ namespace Host
                     ClientName = "Client Credentials Client",
 
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
-                    ClientSecrets = { new Secret("511536EF-F270-4058-80CA-1C89C192F69A".Sha256()) },
+                    ClientSecrets = { new Secret(CryptographyHelper.CreateHash("511536EF-F270-4058-80CA-1C89C192F69A")) },
 
                     AllowedScopes = { "api1" }
                 },
@@ -47,7 +48,7 @@ namespace Host
 
                     AllowedGrantTypes = GrantTypes.CodeAndClientCredentials,
                     RequirePkce = true,
-                    ClientSecrets = { new Secret("49C1A7E1-0C79-4A89-A3D6-A37998FB86B0".Sha256()) },
+                    ClientSecrets = { new Secret( CryptographyHelper.CreateHash("49C1A7E1-0C79-4A89-A3D6-A37998FB86B0")) },
 
                     RedirectUris = { "http://localhost:5003/signin-oidc" },
                     FrontChannelLogoutUri = "http://localhost:5003/signout-oidc",

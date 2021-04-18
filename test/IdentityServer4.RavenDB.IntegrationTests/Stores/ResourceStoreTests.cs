@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using IdentityModel;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
+using IdentityServer4.RavenDB.Storage.Helpers;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
@@ -36,7 +37,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
             return new ApiResource
             {
                 Name = Guid.NewGuid().ToString(),
-                ApiSecrets = new List<Secret> { new Secret("secret".ToSha256()) },
+                ApiSecrets = new List<Secret> { new Secret(CryptographyHelper.CreateHash("secret")) },
                 Scopes = { Guid.NewGuid().ToString() },
                 UserClaims =
                 {

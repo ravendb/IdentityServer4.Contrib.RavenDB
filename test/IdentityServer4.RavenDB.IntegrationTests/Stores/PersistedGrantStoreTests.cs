@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
+using IdentityServer4.RavenDB.Storage.Helpers;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
@@ -40,9 +41,11 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
             
             WaitForIndexing(storeHolder.DocumentStore);
 
+            var hashedTokenKey = CryptographyHelper.CreateHash(persistedGrant.Key);
+
             using (var session = storeHolder.OpenAsyncSession())
             {
-                var foundGrant = await session.Query<PersistedGrant>().FirstOrDefaultAsync(x => x.Key == persistedGrant.Key);
+                var foundGrant = await session.Query<PersistedGrant>().FirstOrDefaultAsync(x => x.Key == hashedTokenKey);
                 Assert.NotNull(foundGrant);
             }
         }
@@ -53,17 +56,19 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
             var storeHolder = await GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex();
 
             var persistedGrant = CreateTestObject();
+            var entity = persistedGrant.ToEntity();
 
             using (var session = storeHolder.OpenAsyncSession())
             {
-               await session.StoreAsync(persistedGrant.ToEntity());
+               await session.StoreAsync(entity);
                await session.SaveChangesAsync();
             }
             
             WaitForIndexing(storeHolder.DocumentStore);
 
             var store = new PersistedGrantStore(storeHolder, FakeLogger<PersistedGrantStore>.Create());
-            var foundPersistedGrant = await store.GetAsync(persistedGrant.Key);
+
+            var foundPersistedGrant = await store.GetAsync(entity.Key);
 
             Assert.NotNull(foundPersistedGrant);
         }
@@ -191,9 +196,11 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
 
             var persistedGrant = CreateTestObject();
 
+            var hashedTokenKey = CryptographyHelper.CreateHash(persistedGrant.Key);
+
             using (var session = storeHolder.OpenAsyncSession())
             {
-                var foundGrant = await session.Query<PersistedGrant>().FirstOrDefaultAsync(x => x.Key == persistedGrant.Key);
+                var foundGrant = await session.Query<PersistedGrant>().FirstOrDefaultAsync(x => x.Key == hashedTokenKey);
                 Assert.Null(foundGrant);
             }
 
@@ -206,7 +213,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
             using (var session = storeHolder.OpenAsyncSession())
             {
                 var foundGrant = await session.Query<PersistedGrant>()
-                    .FirstOrDefaultAsync(x => x.Key == persistedGrant.Key);
+                    .FirstOrDefaultAsync(x => x.Key == hashedTokenKey);
                 Assert.NotNull(foundGrant);
             }
         }
@@ -217,10 +224,11 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
             var storeHolder = await GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex();
 
             var persistedGrant = CreateTestObject();
+            var entity = persistedGrant.ToEntity();
 
             using (var session = storeHolder.OpenAsyncSession())
             {
-                await session.StoreAsync(persistedGrant.ToEntity());
+                await session.StoreAsync(entity);
                 await session.SaveChangesAsync();
             }
 
@@ -229,11 +237,13 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
             var store = new PersistedGrantStore(storeHolder, FakeLogger<PersistedGrantStore>.Create());
             persistedGrant.Expiration = newDate;
             await store.StoreAsync(persistedGrant);
+
+            var hashedTokenKey = CryptographyHelper.CreateHash(persistedGrant.Key);
             
             using (var session = storeHolder.OpenAsyncSession())
             {
                 var foundGrant = await session.Query<Storage.Entities.PersistedGrant>()
-                    .FirstOrDefaultAsync(x => x.Key == persistedGrant.Key);
+                    .FirstOrDefaultAsync(x => x.Key == hashedTokenKey);
                 Assert.NotNull(foundGrant);
                 Assert.Equal(newDate, persistedGrant.Expiration);
             }

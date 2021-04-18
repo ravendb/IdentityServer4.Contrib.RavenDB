@@ -6,6 +6,7 @@ using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
 using IdentityServer4.RavenDB.Storage.Extensions;
+using IdentityServer4.RavenDB.Storage.Helpers;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.Stores;
@@ -38,8 +39,10 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             using (var session = OpenAsyncSession())
             {
+                var hashedTokenKey = CryptographyHelper.CreateHash(token.Key);
+                
                 var existing = await session.Query<Entities.PersistedGrant, PersistedGrantIndex>()
-                    .SingleOrDefaultAsync(x => x.Key == token.Key);
+                    .SingleOrDefaultAsync(x => x.Key == hashedTokenKey);
 
                 if (existing == null)
                 {

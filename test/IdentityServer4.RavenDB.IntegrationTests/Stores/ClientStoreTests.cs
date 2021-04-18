@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IdentityServer4.Models;
 using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
+using IdentityServer4.RavenDB.Storage.Helpers;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
@@ -63,7 +64,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                 AllowedScopes = {"openid", "profile", "api1"},
                 Claims = {new ClientClaim("test", "value")},
-                ClientSecrets = {new Secret("secret".Sha256())},
+                ClientSecrets = {new Secret(CryptographyHelper.CreateHash("secret"))},
                 IdentityProviderRestrictions = {"AD"},
                 PostLogoutRedirectUris = {"https://locahost/signout-callback"},
                 Properties = {{"foo1", "bar1"}, {"foo2", "bar2"},},
