@@ -10,7 +10,7 @@ using IdentityServer4.RavenDB.Storage.Stores;
 using Xunit;
 using Xunit.Sdk;
 
-namespace IdentityServer4.RavenDB.IntegrationTests.Stores
+namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
 {
     public class ClientStoreTests : IntegrationTestBase
     {

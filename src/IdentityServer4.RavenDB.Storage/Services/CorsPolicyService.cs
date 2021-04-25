@@ -13,9 +13,9 @@ namespace IdentityServer4.RavenDB.Storage.Services
 {
     internal class CorsPolicyService : ICorsPolicyService
     {
-        private readonly IConfigurationDocumentStoreHolder _documentStoreHolder;
+        private readonly ConfigurationDocumentStoreHolder _documentStoreHolder;
         
-        public CorsPolicyService(IConfigurationDocumentStoreHolder documentStoreHolder, ILogger<CorsPolicyService> logger)
+        public CorsPolicyService(ConfigurationDocumentStoreHolder documentStoreHolder, ILogger<CorsPolicyService> logger)
         {
             _documentStoreHolder = documentStoreHolder;
             Logger = logger;

@@ -20,10 +20,10 @@ namespace IdentityServer4.RavenDB.Storage.Stores
     /// <seealso cref="IdentityServer4.Stores.IDeviceFlowStore" />
     internal class DeviceFlowStore : IDeviceFlowStore
     {
-        private readonly IOperationalDocumentStoreHolder _documentStoreHolder;
+        private readonly OperationalDocumentStoreHolder _documentStoreHolder;
         
         public DeviceFlowStore(
-            IOperationalDocumentStoreHolder documentStoreHolder,
+            OperationalDocumentStoreHolder documentStoreHolder,
             IPersistentGrantSerializer serializer,
             ILogger<DeviceFlowStore> logger)
         {

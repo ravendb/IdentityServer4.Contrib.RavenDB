@@ -12,11 +12,11 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
     public static class IdentityServerBuilderExtensions
     {
         public static IIdentityServerBuilder AddRavenDbConfigurationStore(
-            this IIdentityServerBuilder builder, Action<RavenDbConfigurationStoreOptions> configurationStoreOptionsAction)
+            this IIdentityServerBuilder builder, Action<RavenDbConfigurationStoreOptions> configureStoreOptions)
         {
-            var storeHolder = builder.Services.AddConfigurationDocumentStoreHolder(configurationStoreOptionsAction);
+            var storeHolder = builder.Services.AddConfigurationDocumentStoreHolder(configureStoreOptions);
             
-            IndexHelper.ExecuteIndexes(storeHolder.DocumentStore, IndexHelper.ConfigurationStoreIndexes);
+            IndexHelper.ExecuteConfigurationStoreIndexes(storeHolder.DocumentStore);
             
             builder.AddClientStore<ClientStore>();
             builder.AddResourceStore<ResourceStore>();
@@ -28,12 +28,7 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
         public static IIdentityServerBuilder AddRavenDbConfigurationStoreCache(
             this IIdentityServerBuilder builder)
         {
-            var services = builder.Services;
-            
-            if (services.Any(x => x.ServiceType == typeof(IConfigurationDocumentStoreHolder)) == false)
-            {
-                throw new InvalidOperationException($"{nameof(AddRavenDbConfigurationStore)} extension method must be called before {nameof(AddRavenDbConfigurationStoreCache)} can be configured.");
-            }
+            CheckAddConfigurationStoreHolderWasCalled(builder.Services);
             
             builder.AddInMemoryCaching();
 
@@ -44,15 +39,23 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
             return builder;
         }
 
-        public static IIdentityServerBuilder AddRavenDbOperationalStore(this IIdentityServerBuilder builder, Action<RavenDbOperationalStoreOptions> operationalStoreOptionsAction)
+        public static IIdentityServerBuilder AddRavenDbOperationalStore(this IIdentityServerBuilder builder, Action<RavenDbOperationalStoreOptions> configureStoreOptions)
         {
-            var storeHolder = builder.Services.AddOperationalDocumentStoreHolder(operationalStoreOptionsAction);
+            var storeHolder = builder.Services.AddOperationalDocumentStoreHolder(configureStoreOptions);
             
-            IndexHelper.ExecuteIndexes(storeHolder.DocumentStore, IndexHelper.OperationalStoreIndexes);
+            IndexHelper.ExecuteOperationalStoreIndexes(storeHolder.DocumentStore);
             
             builder.AddPersistedGrantStore<PersistedGrantStore>();
             builder.AddDeviceFlowStore<DeviceFlowStore>();
             return builder;
+        }
+
+        private static void CheckAddConfigurationStoreHolderWasCalled(IServiceCollection services)
+        {
+            if (services.Any(x => x.ServiceType == typeof(ConfigurationDocumentStoreHolder)) == false)
+            {
+                throw new InvalidOperationException($"{nameof(AddRavenDbConfigurationStore)} extension method must be called before {nameof(AddRavenDbConfigurationStoreCache)} can be configured.");
+            }
         }
     }
 }

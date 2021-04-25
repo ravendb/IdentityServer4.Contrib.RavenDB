@@ -9,7 +9,7 @@ namespace IdentityServer4.RavenDB.Storage.Helpers
 {
     internal static class IndexHelper
     {
-        public static readonly IReadOnlyList<AbstractIndexCreationTask> ConfigurationStoreIndexes = new List<AbstractIndexCreationTask>
+        private static readonly IReadOnlyList<AbstractIndexCreationTask> ConfigurationStoreIndexes = new List<AbstractIndexCreationTask>
         {
             new ClientIndex(),
             new ApiResourceIndex(),
@@ -17,13 +17,23 @@ namespace IdentityServer4.RavenDB.Storage.Helpers
             new IdentityResourceIndex()
         };
         
-        public static readonly IReadOnlyList<AbstractIndexCreationTask> OperationalStoreIndexes = new List<AbstractIndexCreationTask>
+        private static readonly IReadOnlyList<AbstractIndexCreationTask> OperationalStoreIndexes = new List<AbstractIndexCreationTask>
         {
             new PersistedGrantIndex(), 
             new DeviceFlowCodeIndex(),
         };
+
+        public static void ExecuteConfigurationStoreIndexes(IDocumentStore store)
+        {
+            ExecuteIndexes(store, ConfigurationStoreIndexes);
+        }
+
+        public static void ExecuteOperationalStoreIndexes(IDocumentStore store)
+        {
+            ExecuteIndexes(store, OperationalStoreIndexes);
+        }
         
-        public static void ExecuteIndexes(IDocumentStore store, IEnumerable<AbstractIndexCreationTask> indexes)
+        private static void ExecuteIndexes(IDocumentStore store, IEnumerable<AbstractIndexCreationTask> indexes)
         {
             foreach (var index in indexes)
             { 

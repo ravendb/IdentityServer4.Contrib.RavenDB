@@ -5,7 +5,7 @@ using Raven.Client.Documents.Session;
 [assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.DocumentStoreHolder
 {
-    internal abstract class DocumentStoreHolderBase : IDocumentStoreHolder
+    internal abstract class DocumentStoreHolderBase
     {
         public IDocumentStore DocumentStore;
 
@@ -15,5 +15,10 @@ namespace IdentityServer4.RavenDB.Storage.DocumentStoreHolder
         }
 
         public IAsyncDocumentSession OpenAsyncSession() => DocumentStore.OpenAsyncSession();
+
+        public virtual void Dispose()
+        {
+            DocumentStore?.Dispose();
+        }
     }
 }

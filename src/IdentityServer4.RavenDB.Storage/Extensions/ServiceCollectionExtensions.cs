@@ -8,24 +8,24 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
 {
     internal static class ServiceCollectionExtensions
     {
-        public static DocumentStoreHolderBase AddConfigurationDocumentStoreHolder(this IServiceCollection services, Action<RavenDbConfigurationStoreOptions> configurationStoreOptionsAction)
+        public static DocumentStoreHolderBase AddConfigurationDocumentStoreHolder(this IServiceCollection services, Action<RavenDbConfigurationStoreOptions> configureStoreOptions)
         {
-            var options = RavenDbStoreOptionsHelper.GetRavenDbStoreOptions(configurationStoreOptionsAction);
+            var options = RavenDbStoreOptionsHelper.GetOptions(configureStoreOptions);
             var documentStore = DocumentStoreHelper.InitializeDocumentStore(options.ConfigureDocumentStore);
             var documentStoreHolder = new ConfigurationDocumentStoreHolder(documentStore);
             
-            services.AddSingleton<IConfigurationDocumentStoreHolder>(provider => documentStoreHolder);
+            services.AddSingleton(provider => documentStoreHolder);
 
             return documentStoreHolder;
         }
         
-        public static DocumentStoreHolderBase AddOperationalDocumentStoreHolder(this IServiceCollection services, Action<RavenDbOperationalStoreOptions> operationalStoreOptionsAction)
+        public static DocumentStoreHolderBase AddOperationalDocumentStoreHolder(this IServiceCollection services, Action<RavenDbOperationalStoreOptions> configureStoreOptions)
         {
-            var options = RavenDbStoreOptionsHelper.GetRavenDbStoreOptions(operationalStoreOptionsAction);
+            var options = RavenDbStoreOptionsHelper.GetOptions(configureStoreOptions);
             var documentStore = DocumentStoreHelper.InitializeDocumentStore(options.ConfigureDocumentStore);
             var documentStoreHolder = new OperationalDocumentStoreHolder(documentStore);
             
-            services.AddSingleton<IOperationalDocumentStoreHolder>(provider => documentStoreHolder);
+            services.AddSingleton(provider => documentStoreHolder);
 
             return documentStoreHolder;
         }

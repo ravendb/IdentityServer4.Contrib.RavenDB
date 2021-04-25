@@ -23,9 +23,9 @@ namespace IdentityServer4.RavenDB.Storage.Stores
     /// <seealso cref="IdentityServer4.Stores.IPersistedGrantStore" />
     internal class PersistedGrantStore : IPersistedGrantStore
     {
-        private readonly IOperationalDocumentStoreHolder _documentStoreHolder;
+        private readonly OperationalDocumentStoreHolder _documentStoreHolder;
         
-        public PersistedGrantStore(IOperationalDocumentStoreHolder documentStoreHolder, ILogger<PersistedGrantStore> logger)
+        public PersistedGrantStore(OperationalDocumentStoreHolder documentStoreHolder, ILogger<PersistedGrantStore> logger)
         {
             _documentStoreHolder = documentStoreHolder;
             Logger = logger;

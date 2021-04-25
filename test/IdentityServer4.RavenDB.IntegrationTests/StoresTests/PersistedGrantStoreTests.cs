@@ -11,7 +11,7 @@ using IdentityServer4.Stores;
 using Raven.Client.Documents;
 using Xunit;
 
-namespace IdentityServer4.RavenDB.IntegrationTests.Stores
+namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
 {
     public class PersistedGrantStoreTests : IntegrationTestBase
     {

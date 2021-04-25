@@ -20,5 +20,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\IdentityServer4.RavenDB.Storage\IdentityServer4.RavenDB.Storage.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="DocumentStoreHolderTests\certificate.txt" />
+  </ItemGroup>
 
 </Project>

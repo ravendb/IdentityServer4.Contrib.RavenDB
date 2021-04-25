@@ -8,7 +8,7 @@ using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Services;
 using Xunit;
 
-namespace IdentityServer4.RavenDB.IntegrationTests.Services
+namespace IdentityServer4.RavenDB.IntegrationTests.ServicesTests
 {
     public class CorsPolicyServiceTests : IntegrationTestBase
     {

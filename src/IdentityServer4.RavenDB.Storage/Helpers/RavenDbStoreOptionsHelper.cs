@@ -5,10 +5,10 @@ namespace IdentityServer4.RavenDB.Storage.Helpers
 {
     internal static class RavenDbStoreOptionsHelper
     {
-        public static T GetRavenDbStoreOptions<T>(Action<T> ravenDbStoreOptionsAction) where T : RavenDbStoreOptions, new()
+        public static T GetOptions<T>(Action<T> configureStoreOptions) where T : RavenDbStoreOptions, new()
         {
             var options = new T();
-            ravenDbStoreOptionsAction(options);
+            configureStoreOptions(options);
             return options;
         }
     }

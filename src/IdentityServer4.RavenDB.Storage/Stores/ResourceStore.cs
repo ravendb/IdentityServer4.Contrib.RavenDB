@@ -22,10 +22,10 @@ namespace IdentityServer4.RavenDB.Storage.Stores
     /// <seealso cref="IdentityServer4.Stores.IResourceStore" />
     internal class ResourceStore : IResourceStore
     {
-        private readonly IConfigurationDocumentStoreHolder _documentStoreHolder;
+        private readonly ConfigurationDocumentStoreHolder _documentStoreHolder;
         protected ILogger<ResourceStore> Logger { get; }
 
-        public ResourceStore(IConfigurationDocumentStoreHolder documentStoreHolder, ILogger<ResourceStore> logger)
+        public ResourceStore(ConfigurationDocumentStoreHolder documentStoreHolder, ILogger<ResourceStore> logger)
         {
             _documentStoreHolder = documentStoreHolder;
             Logger = logger;

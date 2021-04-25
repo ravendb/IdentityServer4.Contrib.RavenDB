@@ -12,7 +12,7 @@ using IdentityServer4.RavenDB.Storage.Stores;
 using Raven.Client.Documents.Indexes;
 using Xunit;
 
-namespace IdentityServer4.RavenDB.IntegrationTests.Stores
+namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
 {
     public class ResourceStoreTests : IntegrationTestBase
     {

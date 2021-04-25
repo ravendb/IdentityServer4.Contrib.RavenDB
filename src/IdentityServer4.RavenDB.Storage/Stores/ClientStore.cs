@@ -17,9 +17,9 @@ namespace IdentityServer4.RavenDB.Storage.Stores
     /// <seealso cref="IdentityServer4.Stores.IClientStore" />
     internal class ClientStore : IClientStore
     {
-        private readonly IConfigurationDocumentStoreHolder _documentStoreHolder;
+        private readonly ConfigurationDocumentStoreHolder _documentStoreHolder;
         
-        public ClientStore(IConfigurationDocumentStoreHolder documentStoreHolder, ILogger<ClientStore> logger)
+        public ClientStore(ConfigurationDocumentStoreHolder documentStoreHolder, ILogger<ClientStore> logger)
         {
             _documentStoreHolder = documentStoreHolder;
             Logger = logger;
