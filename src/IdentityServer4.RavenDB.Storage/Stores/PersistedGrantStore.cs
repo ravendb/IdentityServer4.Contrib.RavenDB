@@ -11,6 +11,7 @@ using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.Stores;
 using Microsoft.Extensions.Logging;
+using Raven.Client;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Linq;
 using Raven.Client.Documents.Session;
@@ -50,6 +51,7 @@ namespace IdentityServer4.RavenDB.Storage.Stores
 
                     var persistedGrant = token.ToEntity();
                     await session.StoreAsync(persistedGrant);
+                    SetTokenExpirationInDocumentMetadata(session, persistedGrant);
                 }
                 else
                 {
@@ -181,6 +183,12 @@ namespace IdentityServer4.RavenDB.Storage.Stores
             }
 
             return query;
+        }
+
+        private void SetTokenExpirationInDocumentMetadata(IAsyncDocumentSession session, Entities.PersistedGrant persistedGrant)
+        {
+            session.Advanced.GetMetadataFor(persistedGrant)[Constants.Documents.Metadata.Expires] =
+                persistedGrant.Expiration;
         }
     }
 }
