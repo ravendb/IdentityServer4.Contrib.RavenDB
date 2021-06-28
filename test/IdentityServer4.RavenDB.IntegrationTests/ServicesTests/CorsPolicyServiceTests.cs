@@ -2,24 +2,24 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
+using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Services;
 using Xunit;
 
-namespace IdentityServer4.RavenDB.IntegrationTests.Services
+namespace IdentityServer4.RavenDB.IntegrationTests.ServicesTests
 {
-    public class CorsPolicyServiceTests : IntegrationTest
+    public class CorsPolicyServiceTests : IntegrationTestBase
     {
         [Fact]
         public async Task IsOriginAllowedAsync_WhenOriginIsAllowed_ExpectTrue()
         {
             const string testCorsOrigin = "https://identityserver.io/";
 
-            using var store = GetDocumentStore();
-            await new ClientIndex().ExecuteAsync(store);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteClientIndex();
 
-            using (var session = store.OpenAsyncSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
                 await session.StoreAsync(new Client
                 {
@@ -38,25 +38,20 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Services
                 await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(store);
+            WaitForIndexing(storeHolder.DocumentStore);
 
-            bool result;
-            using (var session = store.OpenAsyncSession())
-            {
-                var service = new CorsPolicyService(session, FakeLogger<CorsPolicyService>.Create());
-                result = await service.IsOriginAllowedAsync(testCorsOrigin.ToUpperInvariant());
-            }
-
+            var service = new CorsPolicyService(storeHolder, FakeLogger<CorsPolicyService>.Create());
+            var result = await service.IsOriginAllowedAsync(testCorsOrigin.ToUpperInvariant());
+            
             Assert.True(result);
         }
 
         [Fact]
         public async Task IsOriginAllowedAsync_WhenOriginIsNotAllowed_ExpectFalse()
         {
-            using var store = GetDocumentStore();
-            await new ClientIndex().ExecuteAsync(store);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteClientIndex();
 
-            using (var session = store.OpenAsyncSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
                 await session.StoreAsync(new Client
                 {
@@ -68,16 +63,19 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Services
                 await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(store);
+            WaitForIndexing(storeHolder.DocumentStore);
 
-            bool result;
-            using (var session = store.OpenAsyncSession())
-            {
-                var service = new CorsPolicyService(session, FakeLogger<CorsPolicyService>.Create());
-                result = await service.IsOriginAllowedAsync("InvalidOrigin");
-            }
+            var service = new CorsPolicyService(storeHolder, FakeLogger<CorsPolicyService>.Create());
+            var result = await service.IsOriginAllowedAsync("InvalidOrigin");
 
             Assert.False(result);
+        }
+        
+        private async Task<ConfigurationDocumentStoreHolder> GetOperationalDocumentStoreHolder_AndExecuteClientIndex()
+        {
+            var storeHolder = GetConfigurationDocumentStoreHolder();
+            await ExecuteIndex(storeHolder.DocumentStore, new ClientIndex());
+            return storeHolder;
         }
     }
 }

@@ -2,37 +2,34 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using IdentityServer4.Models;
+using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
+using IdentityServer4.RavenDB.Storage.Helpers;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
 using Xunit;
 using Xunit.Sdk;
 
-namespace IdentityServer4.RavenDB.IntegrationTests.Stores
+namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
 {
-    public class ClientStoreTests : IntegrationTest
+    public class ClientStoreTests : IntegrationTestBase
     {
         [Fact]
         public async Task FindClientByIdAsync_WhenClientDoesNotExist_ExpectNull()
         {
-            using var ravenStore = GetDocumentStore();
-            await new ClientIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteClientIndex();
+            WaitForIndexing(storeHolder.DocumentStore);
             
-            WaitForIndexing(ravenStore);
-            
-            using (var session = ravenStore.OpenAsyncSession())
-            {
-                var store = new ClientStore(session, FakeLogger<ClientStore>.Create());
-                var client = await store.FindClientByIdAsync(Guid.NewGuid().ToString());
-                client.Should().BeNull();
-            }
+            var store = new ClientStore(storeHolder, FakeLogger<ClientStore>.Create());
+            var client = await store.FindClientByIdAsync(Guid.NewGuid().ToString());
+            client.Should().BeNull();
         }
 
         [Fact]
         public async Task FindClientByIdAsync_WhenClientExists_ExpectClientReturned()
         {
-            using var ravenStore = GetDocumentStore();
-            await new ClientIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteClientIndex();
+            WaitForIndexing(storeHolder.DocumentStore);
             
             var testClient = new Client
             {
@@ -40,29 +37,24 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 ClientName = "Test Client"
             };
 
-            using (var session = ravenStore.OpenSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                session.Store(testClient.ToEntity());
-                session.SaveChanges();
+                await session.StoreAsync(testClient.ToEntity());
+                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(ravenStore);
+            WaitForIndexing(storeHolder.DocumentStore);
 
-            Client client;
-            using (var session = ravenStore.OpenAsyncSession())
-            {
-                var store = new ClientStore(session, FakeLogger<ClientStore>.Create());
-                client = await store.FindClientByIdAsync(testClient.ClientId);
-            }
-
+            var store = new ClientStore(storeHolder, FakeLogger<ClientStore>.Create());
+            var client = await store.FindClientByIdAsync(testClient.ClientId);
+            
             client.Should().NotBeNull();
         }
 
         [Fact]
         public async Task FindClientByIdAsync_WhenClientExistsWithCollections_ExpectClientReturnedCollections()
         {
-            using var ravenStore = GetDocumentStore();
-            await new ClientIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteClientIndex();
 
             var testClient = new Client
             {
@@ -72,36 +64,31 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                 AllowedScopes = {"openid", "profile", "api1"},
                 Claims = {new ClientClaim("test", "value")},
-                ClientSecrets = {new Secret("secret".Sha256())},
+                ClientSecrets = {new Secret(CryptographyHelper.CreateHash("secret"))},
                 IdentityProviderRestrictions = {"AD"},
                 PostLogoutRedirectUris = {"https://locahost/signout-callback"},
                 Properties = {{"foo1", "bar1"}, {"foo2", "bar2"},},
                 RedirectUris = {"https://locahost/signin"}
             };
 
-            using (var session = ravenStore.OpenSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                session.Store(testClient.ToEntity());
-                session.SaveChanges();
+                await session.StoreAsync(testClient.ToEntity());
+                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(ravenStore);
+            WaitForIndexing(storeHolder.DocumentStore);
 
-            Client client;
-            using (var session = ravenStore.OpenAsyncSession())
-            {
-                var store = new ClientStore(session, FakeLogger<ClientStore>.Create());
-                client = await store.FindClientByIdAsync(testClient.ClientId);
-            }
-
+            var store = new ClientStore(storeHolder, FakeLogger<ClientStore>.Create());
+            var client = await store.FindClientByIdAsync(testClient.ClientId);
+            
             client.Should().BeEquivalentTo(testClient);
         }
 
         [Fact]
         public async Task FindClientByIdAsync_WhenClientsExistWithManyCollections_ExpectClientReturnedInUnderFiveSeconds()
         {
-            using var ravenStore = GetDocumentStore();
-            await new ClientIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteClientIndex();
 
             var testClient = new Client
             {
@@ -118,13 +105,13 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 testClient.AllowedCorsOrigins.Add($"https://localhost:{i}");
             }
 
-            using (var session = ravenStore.OpenSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                session.Store(testClient.ToEntity());
+                await session.StoreAsync(testClient.ToEntity());
 
                 for (int i = 0; i < 50; i++)
                 {
-                    session.Store(new Client
+                    await session.StoreAsync(new Client
                     {
                         ClientId = testClient.ClientId + i,
                         ClientName = testClient.ClientName,
@@ -136,28 +123,32 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     }.ToEntity());
                 }
 
-                session.SaveChanges();
+                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(ravenStore);
+            WaitForIndexing(storeHolder.DocumentStore);
 
-            using (var session = ravenStore.OpenAsyncSession())
+            var store = new ClientStore(storeHolder, FakeLogger<ClientStore>.Create());
+
+            const int timeout = 5000;
+            var task = Task.Run(() => store.FindClientByIdAsync(testClient.ClientId));
+
+            if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
             {
-                var store = new ClientStore(session, FakeLogger<ClientStore>.Create());
-
-                const int timeout = 5000;
-                var task = Task.Run(() => store.FindClientByIdAsync(testClient.ClientId));
-
-                if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
-                {
-                    var client = task.Result;
-                    client.Should().BeEquivalentTo(testClient);
-                }
-                else
-                {
-                    throw new TestTimeoutException(timeout);
-                }
+                var client = task.Result;
+                client.Should().BeEquivalentTo(testClient);
             }
+            else
+            {
+                throw new TestTimeoutException(timeout);
+            }
+        }
+        
+        private async Task<ConfigurationDocumentStoreHolder> GetOperationalDocumentStoreHolder_AndExecuteClientIndex()
+        {
+            var storeHolder = GetConfigurationDocumentStoreHolder();
+            await ExecuteIndex(storeHolder.DocumentStore, new ClientIndex());
+            return storeHolder;
         }
     }
 }

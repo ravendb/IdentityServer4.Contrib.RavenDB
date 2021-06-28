@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    public class ApiResource : Resource
+    internal class ApiResource : Resource
     {
         public List<string> AllowedAccessTokenSigningAlgorithms { get; set; }
         public List<Secret> Secrets { get; set; }

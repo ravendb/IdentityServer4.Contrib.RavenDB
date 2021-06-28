@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using IdentityServer4.RavenDB.Storage.Entities;
 using Raven.Client.Documents.Indexes;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Indexes
 {
-    public class ApiResourceIndex : AbstractIndexCreationTask<ApiResource, ApiResourceIndex.Result>
+    internal class ApiResourceIndex : AbstractIndexCreationTask<ApiResource, ApiResourceIndex.Result>
     {
         public class Result
         {

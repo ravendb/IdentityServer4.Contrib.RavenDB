@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityServer4;
-using IdentityServer4.Contrib.RavenDB.Extensions;
 using IdentityServer4.Quickstart.UI;
+using IdentityServer4.RavenDB.Storage.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -49,7 +48,17 @@ namespace Host
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
             })
-                .AddConfigurationStore()
+                .AddRavenDbConfigurationStore(options =>
+                {
+                    options.ConfigureDocumentStore = documentStore =>
+                    {
+                        documentStore.Database = "IdentityServer.Contrib.RavenDb.Test";
+                        documentStore.Urls = new[] 
+                        {
+                            "http://localhost:8080"
+                        };
+                    };
+                })
                 .AddTestUsers(TestUsers.Users);
 
             // in-memory, code config

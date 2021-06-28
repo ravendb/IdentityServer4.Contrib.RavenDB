@@ -1,26 +1,28 @@
-﻿using AutoMapper;
+﻿using System.Runtime.CompilerServices;
+using AutoMapper;
 using IdentityServer4.RavenDB.Storage.Entities;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
-    public static class ApiResourceMappers
+    internal static class ApiResourceMappers
     {
+        private static readonly IMapper _mapper;
+        
         static ApiResourceMappers()
         {
-            Mapper = new MapperConfiguration(cfg => cfg.AddProfile<ApiResourceMapperProfile>())
+            _mapper = new MapperConfiguration(cfg => cfg.AddProfile<ApiResourceMapperProfile>())
                 .CreateMapper();
         }
 
-        internal static IMapper Mapper { get; }
-
         public static ApiResource ToEntity(this Models.ApiResource model)
         {
-            return model == null ? null : Mapper.Map<ApiResource>(model);
+            return model == null ? null : _mapper.Map<ApiResource>(model);
         }
 
         public static Models.ApiResource ToModel(this ApiResource entity)
         {
-            return entity == null ? null : Mapper.Map<Models.ApiResource>(entity);
+            return entity == null ? null : _mapper.Map<Models.ApiResource>(entity);
         }
     }
 }

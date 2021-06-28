@@ -1,20 +1,22 @@
-﻿using AutoMapper;
+﻿using System.Runtime.CompilerServices;
+using AutoMapper;
 using IdentityServer4.Models;
 
+[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
     /// <summary>
     /// Extension methods to map to/from entity/model for persisted grants.
     /// </summary>
-    public static class PersistedGrantMappers
+    internal static class PersistedGrantMappers
     {
+        private static readonly IMapper _mapper;
+        
         static PersistedGrantMappers()
         {
-            Mapper = new MapperConfiguration(cfg => cfg.AddProfile<PersistedGrantMapperProfile>())
+            _mapper = new MapperConfiguration(cfg => cfg.AddProfile<PersistedGrantMapperProfile>())
                 .CreateMapper();
         }
-
-        internal static IMapper Mapper { get; }
 
         /// <summary>
         /// Maps an entity to a model.
@@ -23,7 +25,7 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// <returns></returns>
         public static PersistedGrant ToModel(this Entities.PersistedGrant entity)
         {
-            return entity == null ? null : Mapper.Map<PersistedGrant>(entity);
+            return entity == null ? null : _mapper.Map<PersistedGrant>(entity);
         }
 
         /// <summary>
@@ -33,7 +35,7 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// <returns></returns>
         public static Entities.PersistedGrant ToEntity(this PersistedGrant model)
         {
-            return model == null ? null : Mapper.Map<Entities.PersistedGrant>(model);
+            return model == null ? null : _mapper.Map<Entities.PersistedGrant>(model);
         }
 
         /// <summary>
@@ -43,7 +45,7 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         /// <param name="entity">The entity.</param>
         public static void UpdateEntity(this PersistedGrant model, Entities.PersistedGrant entity)
         {
-            Mapper.Map(model, entity);
+            _mapper.Map(model, entity);
         }
     }
 }

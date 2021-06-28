@@ -6,23 +6,24 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IdentityModel;
 using IdentityServer4.Models;
+using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
 using IdentityServer4.RavenDB.Storage.Entities;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Stores;
 using IdentityServer4.Stores.Serialization;
+using Raven.Client.Documents;
 using Xunit;
 
-namespace IdentityServer4.RavenDB.IntegrationTests.Stores
+namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
 {
-    public class DeviceFlowStoreTests : IntegrationTest
+    public class DeviceFlowStoreTests : IntegrationTestBase
     {
-        private readonly IPersistentGrantSerializer serializer = new PersistentGrantSerializer();
+        private readonly IPersistentGrantSerializer _serializer = new PersistentGrantSerializer();
 
         [Fact]
         public async Task StoreDeviceAuthorizationAsync_WhenSuccessful_ExpectDeviceCodeAndUserCodeStored()
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
 
             var deviceCode = Guid.NewGuid().ToString();
             var userCode = Guid.NewGuid().ToString();
@@ -33,16 +34,14 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 Lifetime = 300
             };
 
-            using (var session = ravenStore.OpenAsyncSession())
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(),
+                FakeLogger<DeviceFlowStore>.Create());
+            
+            await store.StoreDeviceAuthorizationAsync(deviceCode, userCode, data);
+            
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
-                    FakeLogger<DeviceFlowStore>.Create());
-                await store.StoreDeviceAuthorizationAsync(deviceCode, userCode, data);
-            }
-
-            using (var session = ravenStore.OpenSession())
-            {
-                var foundDeviceFlowCodes = session.Query<DeviceFlowCode>().FirstOrDefault(x => x.DeviceCode == deviceCode);
+                var foundDeviceFlowCodes = await session.Query<DeviceFlowCode>().FirstOrDefaultAsync(x => x.DeviceCode == deviceCode);
 
                 foundDeviceFlowCodes.Should().NotBeNull();
                 foundDeviceFlowCodes?.DeviceCode.Should().Be(deviceCode);
@@ -53,8 +52,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         [Fact]
         public async Task StoreDeviceAuthorizationAsync_WhenSuccessful_ExpectDataStored()
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
 
             var deviceCode = Guid.NewGuid().ToString();
             var userCode = Guid.NewGuid().ToString();
@@ -65,16 +63,13 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 Lifetime = 300
             };
 
-            using (var session = ravenStore.OpenAsyncSession())
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(),
+                FakeLogger<DeviceFlowStore>.Create());
+            await store.StoreDeviceAuthorizationAsync(deviceCode, userCode, data);
+            
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
-                    FakeLogger<DeviceFlowStore>.Create());
-                await store.StoreDeviceAuthorizationAsync(deviceCode, userCode, data);
-            }
-
-            using (var session = ravenStore.OpenSession())
-            {
-                var foundDeviceFlowCodes = session.Query<DeviceFlowCode>().FirstOrDefault(x => x.DeviceCode == deviceCode);
+                var foundDeviceFlowCodes = await session.Query<DeviceFlowCode>().FirstOrDefaultAsync(x => x.DeviceCode == deviceCode);
 
                 foundDeviceFlowCodes.Should().NotBeNull();
                 var deserializedData =
@@ -89,8 +84,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         [Fact]
         public async Task StoreDeviceAuthorizationAsync_WhenUserCodeAlreadyExists_ExpectException()
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
 
             var existingUserCode = $"user_{Guid.NewGuid().ToString()}";
             var deviceCodeData = new DeviceCode
@@ -104,9 +98,9 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     new List<Claim> {new Claim(JwtClaimTypes.Subject, $"sub_{Guid.NewGuid().ToString()}")}))
             };
 
-            using (var session = ravenStore.OpenSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                session.Store(new DeviceFlowCode
+                await session.StoreAsync(new DeviceFlowCode
                 {
                     DeviceCode = $"device_{Guid.NewGuid().ToString()}",
                     UserCode = existingUserCode,
@@ -114,29 +108,27 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     SubjectId = deviceCodeData.Subject.FindFirst(JwtClaimTypes.Subject).Value,
                     CreationTime = deviceCodeData.CreationTime,
                     Expiration = deviceCodeData.CreationTime.AddSeconds(deviceCodeData.Lifetime),
-                    Data = serializer.Serialize(deviceCodeData)
+                    Data = _serializer.Serialize(deviceCodeData)
                 });
-                session.SaveChanges();
+                
+                await session.SaveChangesAsync();
             }
             
-            WaitForIndexing(ravenStore);
+            WaitForIndexing(storeHolder.DocumentStore);
 
-            using (var session = ravenStore.OpenAsyncSession())
-            {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
-                    FakeLogger<DeviceFlowStore>.Create());
+            
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(),
+                FakeLogger<DeviceFlowStore>.Create());
 
-                await Assert.ThrowsAsync<Exception>(() =>
-                    store.StoreDeviceAuthorizationAsync($"device_{Guid.NewGuid().ToString()}", existingUserCode,
-                        deviceCodeData));
-            }
+            await Assert.ThrowsAsync<Exception>(() =>
+                store.StoreDeviceAuthorizationAsync($"device_{Guid.NewGuid().ToString()}", existingUserCode,
+                    deviceCodeData));
         }
 
         [Fact]
         public async Task StoreDeviceAuthorizationAsync_WhenDeviceCodeAlreadyExists_ExpectException()
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
 
             var existingDeviceCode = $"device_{Guid.NewGuid().ToString()}";
             var deviceCodeData = new DeviceCode
@@ -150,9 +142,9 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     new List<Claim> {new Claim(JwtClaimTypes.Subject, $"sub_{Guid.NewGuid().ToString()}")}))
             };
 
-            using (var session = ravenStore.OpenSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                session.Store(new DeviceFlowCode
+                await session.StoreAsync(new DeviceFlowCode
                 {
                     DeviceCode = existingDeviceCode,
                     UserCode = $"user_{Guid.NewGuid().ToString()}",
@@ -160,29 +152,27 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     SubjectId = deviceCodeData.Subject.FindFirst(JwtClaimTypes.Subject).Value,
                     CreationTime = deviceCodeData.CreationTime,
                     Expiration = deviceCodeData.CreationTime.AddSeconds(deviceCodeData.Lifetime),
-                    Data = serializer.Serialize(deviceCodeData)
+                    Data = _serializer.Serialize(deviceCodeData)
                 });
-                session.SaveChanges();
+                
+                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(ravenStore);
+            WaitForIndexing(storeHolder.DocumentStore);
 
-            using (var session = ravenStore.OpenAsyncSession())
-            {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
-                    FakeLogger<DeviceFlowStore>.Create());
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(),
+                FakeLogger<DeviceFlowStore>.Create());
 
-                await Assert.ThrowsAsync<Exception>(() =>
-                    store.StoreDeviceAuthorizationAsync(existingDeviceCode, $"user_{Guid.NewGuid().ToString()}",
-                        deviceCodeData));
-            }
+            await Assert.ThrowsAsync<Exception>(() =>
+                store.StoreDeviceAuthorizationAsync(existingDeviceCode, $"user_{Guid.NewGuid().ToString()}",
+                    deviceCodeData));
+            
         }
 
         [Fact]
         public async Task FindByUserCodeAsync_WhenUserCodeExists_ExpectDataRetrievedCorrectly()
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
 
             var testDeviceCode = $"device_{Guid.NewGuid().ToString()}";
             var testUserCode = $"user_{Guid.NewGuid().ToString()}";
@@ -199,9 +189,9 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     {new Claim(JwtClaimTypes.Subject, expectedSubject)}))
             };
 
-            using (var session = ravenStore.OpenSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                session.Store(new DeviceFlowCode
+                await session.StoreAsync(new DeviceFlowCode
                 {
                     DeviceCode = testDeviceCode,
                     UserCode = testUserCode,
@@ -209,20 +199,18 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     SubjectId = expectedDeviceCodeData.Subject.FindFirst(JwtClaimTypes.Subject).Value,
                     CreationTime = expectedDeviceCodeData.CreationTime,
                     Expiration = expectedDeviceCodeData.CreationTime.AddSeconds(expectedDeviceCodeData.Lifetime),
-                    Data = serializer.Serialize(expectedDeviceCodeData)
+                    Data = _serializer.Serialize(expectedDeviceCodeData)
                 });
-                session.SaveChanges();
+                
+                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(ravenStore);
+            WaitForIndexing(storeHolder.DocumentStore);
 
-            DeviceCode code;
-            using (var session = ravenStore.OpenAsyncSession())
-            {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
-                    FakeLogger<DeviceFlowStore>.Create());
-                code = await store.FindByUserCodeAsync(testUserCode);
-            }
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(),
+                FakeLogger<DeviceFlowStore>.Create());
+            var code = await store.FindByUserCodeAsync(testUserCode);
+            
 
             code.Should().BeEquivalentTo(expectedDeviceCodeData,
                 assertionOptions => assertionOptions.Excluding(x => x.Subject));
@@ -234,23 +222,18 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         [Fact]
         public async Task FindByUserCodeAsync_WhenUserCodeDoesNotExist_ExpectNull()
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
 
-            using (var session = ravenStore.OpenAsyncSession())
-            {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
-                    FakeLogger<DeviceFlowStore>.Create());
-                var code = await store.FindByUserCodeAsync($"user_{Guid.NewGuid().ToString()}");
-                code.Should().BeNull();
-            }
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(),
+                FakeLogger<DeviceFlowStore>.Create());
+            var code = await store.FindByUserCodeAsync($"user_{Guid.NewGuid().ToString()}");
+            code.Should().BeNull();
         }
 
         [Fact]
         public async Task FindByDeviceCodeAsync_WhenDeviceCodeExists_ExpectDataRetrievedCorrectly()
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
 
             var testDeviceCode = $"device_{Guid.NewGuid().ToString()}";
             var testUserCode = $"user_{Guid.NewGuid().ToString()}";
@@ -267,9 +250,9 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     {new Claim(JwtClaimTypes.Subject, expectedSubject)}))
             };
 
-            using (var session = ravenStore.OpenSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                session.Store(new DeviceFlowCode
+                await session.StoreAsync(new DeviceFlowCode
                 {
                     DeviceCode = testDeviceCode,
                     UserCode = testUserCode,
@@ -277,20 +260,18 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                     SubjectId = expectedDeviceCodeData.Subject.FindFirst(JwtClaimTypes.Subject).Value,
                     CreationTime = expectedDeviceCodeData.CreationTime,
                     Expiration = expectedDeviceCodeData.CreationTime.AddSeconds(expectedDeviceCodeData.Lifetime),
-                    Data = serializer.Serialize(expectedDeviceCodeData)
+                    Data = _serializer.Serialize(expectedDeviceCodeData)
                 });
-                session.SaveChanges();
+                
+                await session.SaveChangesAsync();
             }
             
-            WaitForIndexing(ravenStore);
+            WaitForIndexing(storeHolder.DocumentStore);
 
-            DeviceCode code;
-            using (var session = ravenStore.OpenAsyncSession())
-            {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
-                    FakeLogger<DeviceFlowStore>.Create());
-                code = await store.FindByDeviceCodeAsync(testDeviceCode);
-            }
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(),
+                FakeLogger<DeviceFlowStore>.Create());
+            var code = await store.FindByDeviceCodeAsync(testDeviceCode);
+            
 
             code.Should().BeEquivalentTo(expectedDeviceCodeData,
                 assertionOptions => assertionOptions.Excluding(x => x.Subject));
@@ -302,23 +283,18 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
         [Fact]
         public async Task FindByDeviceCodeAsync_WhenDeviceCodeDoesNotExist_ExpectNull()
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
 
-            using (var session = ravenStore.OpenAsyncSession())
-            {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
-                    FakeLogger<DeviceFlowStore>.Create());
-                var code = await store.FindByDeviceCodeAsync($"device_{Guid.NewGuid().ToString()}");
-                code.Should().BeNull();
-            }
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(),
+                FakeLogger<DeviceFlowStore>.Create());
+            var code = await store.FindByDeviceCodeAsync($"device_{Guid.NewGuid().ToString()}");
+            code.Should().BeNull();
         }
 
         [Fact]
         public async Task UpdateByUserCodeAsync_WhenDeviceCodeAuthorized_ExpectSubjectAndDataUpdated()
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
 
             var testDeviceCode = $"device_{Guid.NewGuid().ToString()}";
             var testUserCode = $"user_{Guid.NewGuid().ToString()}";
@@ -333,21 +309,22 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 IsOpenId = true
             };
 
-            using (var session = ravenStore.OpenSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                session.Store(new DeviceFlowCode
+                await session.StoreAsync(new DeviceFlowCode
                 {
                     DeviceCode = testDeviceCode,
                     UserCode = testUserCode,
                     ClientId = unauthorizedDeviceCode.ClientId,
                     CreationTime = unauthorizedDeviceCode.CreationTime,
                     Expiration = unauthorizedDeviceCode.CreationTime.AddSeconds(unauthorizedDeviceCode.Lifetime),
-                    Data = serializer.Serialize(unauthorizedDeviceCode)
+                    Data = _serializer.Serialize(unauthorizedDeviceCode)
                 });
-                session.SaveChanges();
+                
+                await session.SaveChangesAsync();
             }
             
-            WaitForIndexing(ravenStore);
+            WaitForIndexing(storeHolder.DocumentStore);
 
             var authorizedDeviceCode = new DeviceCode
             {
@@ -362,42 +339,37 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 Lifetime = 300
             };
 
-            using (var session = ravenStore.OpenAsyncSession())
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(),
+                FakeLogger<DeviceFlowStore>.Create());
+            await store.UpdateByUserCodeAsync(testUserCode, authorizedDeviceCode);
+            
+            WaitForIndexing(storeHolder.DocumentStore);
+
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
-                    FakeLogger<DeviceFlowStore>.Create());
-                await store.UpdateByUserCodeAsync(testUserCode, authorizedDeviceCode);
+                var updatedCodes = await session.Query<DeviceFlowCode>().SingleAsync(x => x.UserCode == testUserCode);
+                
+                // should be unchanged
+                updatedCodes.DeviceCode.Should().Be(testDeviceCode);
+                updatedCodes.ClientId.Should().Be(unauthorizedDeviceCode.ClientId);
+                updatedCodes.CreationTime.Should().Be(unauthorizedDeviceCode.CreationTime);
+                updatedCodes.Expiration.Should()
+                    .Be(unauthorizedDeviceCode.CreationTime.AddSeconds(authorizedDeviceCode.Lifetime));
+
+                // should be changed
+                var parsedCode = _serializer.Deserialize<DeviceCode>(updatedCodes.Data);
+                parsedCode.Should().BeEquivalentTo(authorizedDeviceCode,
+                    assertionOptions => assertionOptions.Excluding(x => x.Subject));
+                parsedCode.Subject.Claims
+                    .FirstOrDefault(x => x.Type == JwtClaimTypes.Subject && x.Value == expectedSubject).Should()
+                    .NotBeNull();
             }
-
-            WaitForIndexing(ravenStore);
-
-            DeviceFlowCode updatedCodes;
-            using (var session = ravenStore.OpenSession())
-            {
-                updatedCodes = session.Query<DeviceFlowCode>().Single(x => x.UserCode == testUserCode);
-            }
-
-            // should be unchanged
-            updatedCodes.DeviceCode.Should().Be(testDeviceCode);
-            updatedCodes.ClientId.Should().Be(unauthorizedDeviceCode.ClientId);
-            updatedCodes.CreationTime.Should().Be(unauthorizedDeviceCode.CreationTime);
-            updatedCodes.Expiration.Should()
-                .Be(unauthorizedDeviceCode.CreationTime.AddSeconds(authorizedDeviceCode.Lifetime));
-
-            // should be changed
-            var parsedCode = serializer.Deserialize<DeviceCode>(updatedCodes.Data);
-            parsedCode.Should().BeEquivalentTo(authorizedDeviceCode,
-                assertionOptions => assertionOptions.Excluding(x => x.Subject));
-            parsedCode.Subject.Claims
-                .FirstOrDefault(x => x.Type == JwtClaimTypes.Subject && x.Value == expectedSubject).Should()
-                .NotBeNull();
         }
 
         [Fact]
-        public async Task RemoveByDeviceCodeAsync_WhenDeviceCodeExists_ExpectDeviceCodeDeleted()
+        public async Task RemoveByDeviceCodeAsync_WhenDeviceCodeExists_ExpectDeviceCodeDeleted() 
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
 
             var testDeviceCode = $"device_{Guid.NewGuid().ToString()}";
             var testUserCode = $"user_{Guid.NewGuid().ToString()}";
@@ -411,48 +383,51 @@ namespace IdentityServer4.RavenDB.IntegrationTests.Stores
                 IsOpenId = true
             };
 
-            using (var session = ravenStore.OpenSession())
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                session.Store(new DeviceFlowCode
+                await session.StoreAsync(new DeviceFlowCode
                 {
                     DeviceCode = testDeviceCode,
                     UserCode = testUserCode,
                     ClientId = existingDeviceCode.ClientId,
                     CreationTime = existingDeviceCode.CreationTime,
                     Expiration = existingDeviceCode.CreationTime.AddSeconds(existingDeviceCode.Lifetime),
-                    Data = serializer.Serialize(existingDeviceCode)
+                    Data = _serializer.Serialize(existingDeviceCode)
                 });
-                session.SaveChanges();
+                
+                await session.SaveChangesAsync();
             }
                 
-            WaitForIndexing(ravenStore);
+            WaitForIndexing(storeHolder.DocumentStore);
 
-            using (var session = ravenStore.OpenAsyncSession())
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(),
+                FakeLogger<DeviceFlowStore>.Create());
+            await store.RemoveByDeviceCodeAsync(testDeviceCode);
+            
+            using (var session = storeHolder.OpenAsyncSession())
             {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(),
-                    FakeLogger<DeviceFlowStore>.Create());
-                await store.RemoveByDeviceCodeAsync(testDeviceCode);
-            }
-
-            using (var session = ravenStore.OpenSession())
-            {
-                session.Query<DeviceFlowCode>().FirstOrDefault(x => x.UserCode == testUserCode)
-                    .Should().BeNull();
+                var deviceFlowCode = await session.Query<DeviceFlowCode>()
+                    .FirstOrDefaultAsync(x => x.UserCode == testUserCode);
+                
+                deviceFlowCode.Should().BeNull();
             }
         }
 
         [Fact]
         public async Task RemoveByDeviceCodeAsync_WhenDeviceCodeDoesNotExists_ExpectSuccess()
         {
-            using var ravenStore = GetDocumentStore();
-            await new DeviceFlowCodeIndex().ExecuteAsync(ravenStore);
+            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex();
+            
+            var store = new DeviceFlowStore(storeHolder, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create());
 
-            using (var session = ravenStore.OpenAsyncSession())
-            {
-                var store = new DeviceFlowStore(session, new PersistentGrantSerializer(), FakeLogger<DeviceFlowStore>.Create());
-
-                await store.RemoveByDeviceCodeAsync($"device_{Guid.NewGuid().ToString()}");
-            }
+            await store.RemoveByDeviceCodeAsync($"device_{Guid.NewGuid().ToString()}");
         }
+
+        private async Task<OperationalDocumentStoreHolder> GetOperationalDocumentStoreHolder_AndExecuteDeviceFlowCodeIndex()
+        {
+            var storeHolder = GetOperationalDocumentStoreHolder();
+            await ExecuteIndex(storeHolder.DocumentStore, new DeviceFlowCodeIndex());
+            return storeHolder;
+        } 
     }
 }
