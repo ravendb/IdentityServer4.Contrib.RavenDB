@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.RavenDB.Sto
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7A045ABA-B1ED-43E6-9C30-D7C6E4E93AF8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.RavenDB.IntegrationTests", "test\IdentityServer4.RavenDB.IntegrationTests\IdentityServer4.RavenDB.IntegrationTests.csproj", "{EFCDFC77-D1D5-463B-BBAD-E1F47D1C9138}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer4.RavenDB.Storage.Tests", "test\IdentityServer4.RavenDB.Storage.Tests\IdentityServer4.RavenDB.Storage.Tests.csproj", "{EFCDFC77-D1D5-463B-BBAD-E1F47D1C9138}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "host", "host", "{2D41CBAB-77B9-49F9-8531-AF3D0EAE0695}"
 EndProject

@@ -8,26 +8,18 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
 {
     internal static class ServiceCollectionExtensions
     {
-        public static DocumentStoreHolderBase AddConfigurationDocumentStoreHolder(this IServiceCollection services, Action<RavenDbConfigurationStoreOptions> configureStoreOptions)
+        public static void AddConfigurationDocumentStoreHolder(this IServiceCollection services, Action<RavenDbConfigurationStoreOptions> configureStoreOptions)
         {
             var options = RavenDbStoreOptionsHelper.GetOptions(configureStoreOptions);
-            var documentStore = DocumentStoreHelper.InitializeDocumentStore(options.ConfigureDocumentStore);
-            var documentStoreHolder = new ConfigurationDocumentStoreHolder(documentStore);
             
-            services.AddSingleton(provider => documentStoreHolder);
-
-            return documentStoreHolder;
+            services.AddSingleton(provider => new ConfigurationDocumentStoreHolder(options));
         }
         
-        public static DocumentStoreHolderBase AddOperationalDocumentStoreHolder(this IServiceCollection services, Action<RavenDbOperationalStoreOptions> configureStoreOptions)
+        public static void AddOperationalDocumentStoreHolder(this IServiceCollection services, Action<RavenDbOperationalStoreOptions> configureStoreOptions)
         {
             var options = RavenDbStoreOptionsHelper.GetOptions(configureStoreOptions);
-            var documentStore = DocumentStoreHelper.InitializeDocumentStore(options.ConfigureDocumentStore);
-            var documentStoreHolder = new OperationalDocumentStoreHolder(documentStore);
             
-            services.AddSingleton(provider => documentStoreHolder);
-
-            return documentStoreHolder;
+            services.AddSingleton(provider => new OperationalDocumentStoreHolder(options));
         }
     }
 }

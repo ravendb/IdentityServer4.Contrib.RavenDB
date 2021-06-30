@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
     internal class ApiResource : Resource

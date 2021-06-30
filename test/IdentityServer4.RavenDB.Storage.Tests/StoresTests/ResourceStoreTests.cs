@@ -4,15 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using IdentityModel;
 using IdentityServer4.Models;
-using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
 using IdentityServer4.RavenDB.Storage.Helpers;
-using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Stores;
-using Raven.Client.Documents.Indexes;
 using Xunit;
 
-namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
+namespace IdentityServer4.RavenDB.Storage.Tests.StoresTests
 {
     public class ResourceStoreTests : IntegrationTestBase
     {
@@ -63,7 +60,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task FindApiResourcesByNameAsync_WhenResourceExists_ExpectResourceAndCollectionsReturned()
         {
-            var storeHolder = await GetConfigurationDocumentStoreHolder_AndExecuteIndex(new ApiResourceIndex());
+            var storeHolder = GetConfigurationDocumentStoreHolder();
 
             var resource = CreateApiResourceTestResource();
 
@@ -73,7 +70,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new ResourceStore(storeHolder, FakeLogger<ResourceStore>.Create());
             var apiResourceNames = new[]
@@ -98,7 +95,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task FindApiResourcesByNameAsync_WhenResourcesExist_ExpectOnlyResourcesRequestedReturned()
         {
-            var storeHolder = await GetConfigurationDocumentStoreHolder_AndExecuteIndex(new ApiResourceIndex());
+            var storeHolder = GetConfigurationDocumentStoreHolder();
 
             var resource = CreateApiResourceTestResource();
 
@@ -109,7 +106,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new ResourceStore(storeHolder, FakeLogger<ResourceStore>.Create());
             var foundResource = (await store.FindApiResourcesByNameAsync(new[] {resource.Name})).SingleOrDefault();
@@ -129,7 +126,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task FindApiResourcesByScopeNameAsync_WhenResourcesExist_ExpectResourcesReturned()
         {
-            var storeHolder = await GetConfigurationDocumentStoreHolder_AndExecuteIndex(new ApiResourceIndex());
+            var storeHolder = GetConfigurationDocumentStoreHolder();
 
             var testApiResource = CreateApiResourceTestResource();
             var testApiScope = CreateApiScopeTestResource();
@@ -142,7 +139,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                 await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new ResourceStore(storeHolder, FakeLogger<ResourceStore>.Create());
             var resources = await store.FindApiResourcesByScopeNameAsync(new List<string>
@@ -158,7 +155,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task FindApiResourcesByScopeNameAsync_WhenResourcesExist_ExpectOnlyResourcesRequestedReturned()
         {
-            var storeHolder = await GetConfigurationDocumentStoreHolder_AndExecuteIndex(new ApiResourceIndex());
+            var storeHolder = GetConfigurationDocumentStoreHolder();
 
             var testIdentityResource = CreateIdentityTestResource();
             var testApiResource = CreateApiResourceTestResource();
@@ -176,7 +173,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new ResourceStore(storeHolder, FakeLogger<ResourceStore>.Create());
             var resources = await store.FindApiResourcesByScopeNameAsync(new[] { testApiScope.Name });
@@ -189,7 +186,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task FindIdentityResourcesByScopeNameAsync_WhenResourceExists_ExpectResourceAndCollectionsReturned()
         {
-            var storeHolder = await GetConfigurationDocumentStoreHolder_AndExecuteIndex(new IdentityResourceIndex());
+            var storeHolder = GetConfigurationDocumentStoreHolder();
 
             var resource = CreateIdentityTestResource();
 
@@ -199,7 +196,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                 await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new ResourceStore(storeHolder, FakeLogger<ResourceStore>.Create());
             var resources = (await store.FindIdentityResourcesByScopeNameAsync(new List<string>
@@ -221,7 +218,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task FindIdentityResourcesByScopeNameAsync_WhenResourcesExist_ExpectOnlyRequestedReturned()
         {
-            var storeHolder = await GetConfigurationDocumentStoreHolder_AndExecuteIndex(new IdentityResourceIndex());
+            var storeHolder = GetConfigurationDocumentStoreHolder();
 
             var resource = CreateIdentityTestResource();
 
@@ -232,7 +229,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new ResourceStore(storeHolder, FakeLogger<ResourceStore>.Create());
             var resources = (await store.FindIdentityResourcesByScopeNameAsync(new List<string>
@@ -249,7 +246,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task FindApiScopesByNameAsync_WhenResourceExists_ExpectResourceAndCollectionsReturned()
         {
-            var storeHolder = await GetConfigurationDocumentStoreHolder_AndExecuteIndex(new ApiScopeIndex());
+            var storeHolder = GetConfigurationDocumentStoreHolder();
 
             var resource = CreateApiScopeTestResource();
 
@@ -259,7 +256,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new ResourceStore(storeHolder, FakeLogger<ResourceStore>.Create());
             var resources = (await store.FindApiScopesByNameAsync(new List<string>
@@ -280,7 +277,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task FindApiScopesByNameAsync_WhenResourcesExist_ExpectOnlyRequestedReturned()
         {
-            var storeHolder = await GetConfigurationDocumentStoreHolder_AndExecuteIndex(new ApiScopeIndex());
+            var storeHolder = GetConfigurationDocumentStoreHolder();
             
             var resource = CreateApiScopeTestResource();
 
@@ -291,7 +288,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new ResourceStore(storeHolder, FakeLogger<ResourceStore>.Create());
             var resources = (await store.FindApiScopesByNameAsync(new List<string>
@@ -308,7 +305,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task GetAllResources_WhenAllResourcesRequested_ExpectAllResourcesIncludingHidden()
         {
-            var storeHolder = await GetConfigurationDocumentStoreHolder_AndExecuteIndex(new ApiResourceIndex());
+            var storeHolder = GetConfigurationDocumentStoreHolder();
 
             var visibleIdentityResource = CreateIdentityTestResource();
             var visibleApiResource = CreateApiResourceTestResource();
@@ -340,8 +337,8 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
-            WaitForUserToContinueTheTest(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
+            WaitForUserToContinueTheTest(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new ResourceStore(storeHolder, FakeLogger<ResourceStore>.Create());
             var resources = await store.GetAllResourcesAsync();
@@ -359,13 +356,6 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
 
             Assert.Contains(resources.ApiScopes, x => x.Name == visibleApiScope.Name);
             Assert.Contains(resources.ApiScopes, x => x.Name == hiddenApiScope.Name);
-        }
-        
-        private async Task<ConfigurationDocumentStoreHolder> GetConfigurationDocumentStoreHolder_AndExecuteIndex(AbstractIndexCreationTask index)
-        {
-            var storeHolder = GetConfigurationDocumentStoreHolder();
-            await ExecuteIndex(storeHolder.DocumentStore, index);
-            return storeHolder;
         }
     }
 }

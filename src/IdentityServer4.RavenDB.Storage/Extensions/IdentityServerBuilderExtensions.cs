@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
-using IdentityServer4.RavenDB.Storage.Helpers;
 using IdentityServer4.RavenDB.Storage.Options;
 using IdentityServer4.RavenDB.Storage.Services;
 using IdentityServer4.RavenDB.Storage.Stores;
@@ -14,9 +13,7 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
         public static IIdentityServerBuilder AddRavenDbConfigurationStore(
             this IIdentityServerBuilder builder, Action<RavenDbConfigurationStoreOptions> configureStoreOptions)
         {
-            var storeHolder = builder.Services.AddConfigurationDocumentStoreHolder(configureStoreOptions);
-            
-            IndexHelper.ExecuteConfigurationStoreIndexes(storeHolder.DocumentStore);
+            builder.Services.AddConfigurationDocumentStoreHolder(configureStoreOptions);
             
             builder.AddClientStore<ClientStore>();
             builder.AddResourceStore<ResourceStore>();
@@ -41,9 +38,7 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
 
         public static IIdentityServerBuilder AddRavenDbOperationalStore(this IIdentityServerBuilder builder, Action<RavenDbOperationalStoreOptions> configureStoreOptions)
         {
-            var storeHolder = builder.Services.AddOperationalDocumentStoreHolder(configureStoreOptions);
-            
-            IndexHelper.ExecuteOperationalStoreIndexes(storeHolder.DocumentStore);
+            builder.Services.AddOperationalDocumentStoreHolder(configureStoreOptions);
             
             builder.AddPersistedGrantStore<PersistedGrantStore>();
             builder.AddDeviceFlowStore<DeviceFlowStore>();

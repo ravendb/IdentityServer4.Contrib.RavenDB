@@ -1,9 +1,7 @@
 using System.Linq;
-using System.Runtime.CompilerServices;
 using IdentityServer4.RavenDB.Storage.Entities;
 using Raven.Client.Documents.Indexes;
 
-[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Indexes
 {
     internal class PersistedGrantIndex : AbstractIndexCreationTask<PersistedGrant, PersistedGrantIndex.Result>

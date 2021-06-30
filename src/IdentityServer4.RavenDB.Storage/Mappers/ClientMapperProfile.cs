@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using AutoMapper;
 using IdentityServer4.Models;
 
 using Client = IdentityServer4.Models.Client;
 using Secret = IdentityServer4.Models.Secret;
 
-[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
     internal class ClientMapperProfile : Profile
