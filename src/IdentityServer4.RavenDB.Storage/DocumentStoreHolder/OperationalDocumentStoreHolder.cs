@@ -6,7 +6,7 @@ using Raven.Client.Documents.Session;
 
 namespace IdentityServer4.RavenDB.Storage.DocumentStoreHolder
 {
-    internal class OperationalDocumentStoreHolder : IDisposable
+    internal class OperationalDocumentStoreHolder : IDocumentStoreHolder
     {
         private readonly IDocumentStore _documentStore;
         

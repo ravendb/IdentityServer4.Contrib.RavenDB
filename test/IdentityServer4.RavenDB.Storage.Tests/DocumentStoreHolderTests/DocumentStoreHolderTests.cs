@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
 using IdentityServer4.RavenDB.Storage.Helpers;
-using IdentityServer4.RavenDB.Storage.Options;
 using Raven.Client.Documents;
 using Xunit;
 
@@ -14,11 +12,9 @@ namespace IdentityServer4.RavenDB.Storage.Tests.DocumentStoreHolderTests
         [Fact]
         public void DocumentStore_IsDisposed_WhenConfigurationDocumentStoreHolderIsDisposed()
         {
-            var options = GetRavenDbConfigurationStoreOptions();
-
             IDocumentStore documentStore;
 
-            using(var storeHolder =  GetConfigurationDocumentStoreHolder(options))
+            using(var storeHolder =  GetConfigurationDocumentStoreHolder())
             {
                 documentStore = storeHolder.IntegrationTest_GetDocumentStore();
                 AssertDocumentStoreNotDisposed(documentStore);
@@ -30,11 +26,9 @@ namespace IdentityServer4.RavenDB.Storage.Tests.DocumentStoreHolderTests
         [Fact]
         public void DocumentStore_IsDisposed_WhenOperationalDocumentStoreHolderIsDisposed()
         {
-            var options = GetRavenDbOperationalStoreOptions();
-            
             IDocumentStore documentStore;
             
-            using (var storeHolder = GetOperationalDocumentStoreHolder(options))
+            using (var storeHolder = GetOperationalDocumentStoreHolder())
             {
                 documentStore = storeHolder.IntegrationTest_GetDocumentStore();
                 AssertDocumentStoreNotDisposed(documentStore);
@@ -78,16 +72,6 @@ namespace IdentityServer4.RavenDB.Storage.Tests.DocumentStoreHolderTests
             var bytes = Convert.FromBase64String(cert);
             
             return new X509Certificate2(bytes);
-        }
-
-        private ConfigurationDocumentStoreHolder GetConfigurationDocumentStoreHolder(RavenDbConfigurationStoreOptions options)
-        {
-            return new ConfigurationDocumentStoreHolder(options);
-        }
-        
-        private OperationalDocumentStoreHolder GetOperationalDocumentStoreHolder(RavenDbOperationalStoreOptions options)
-        {
-            return new OperationalDocumentStoreHolder(options);
         }
 
         private void AssertDocumentStoreDisposed(IDocumentStore store)

@@ -16,7 +16,7 @@ namespace IdentityServer4.RavenDB.Storage.Tests
             return new ConfigurationDocumentStoreHolder(options);
         }
 
-        internal RavenDbConfigurationStoreOptions GetRavenDbConfigurationStoreOptions(X509Certificate2 cert = null)
+        private RavenDbConfigurationStoreOptions GetRavenDbConfigurationStoreOptions(X509Certificate2 cert = null)
         {
             var documentStore = GetDocumentStore();
             
@@ -40,7 +40,7 @@ namespace IdentityServer4.RavenDB.Storage.Tests
             return new OperationalDocumentStoreHolder(options);
         }
 
-        internal RavenDbOperationalStoreOptions GetRavenDbOperationalStoreOptions()
+        private RavenDbOperationalStoreOptions GetRavenDbOperationalStoreOptions()
         {
             var documentStore = GetDocumentStore();
             
