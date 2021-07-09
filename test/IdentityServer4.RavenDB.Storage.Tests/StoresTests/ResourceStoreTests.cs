@@ -135,7 +135,6 @@ namespace IdentityServer4.RavenDB.Storage.Tests.StoresTests
             using (var session = storeHolder.OpenAsyncSession())
             {
                 await session.StoreAsync(testApiResource.ToEntity());
-                //session.Store(testApiScope.ToEntity());
                 await session.SaveChangesAsync();
             }
 
@@ -166,10 +165,8 @@ namespace IdentityServer4.RavenDB.Storage.Tests.StoresTests
             {
                await session.StoreAsync(testIdentityResource.ToEntity());
                await session.StoreAsync(testApiResource.ToEntity());
-                //session.Store(testApiScope.ToEntity());
                await session.StoreAsync(CreateIdentityTestResource().ToEntity());
                await session.StoreAsync(CreateApiResourceTestResource().ToEntity());
-                //session.Store(CreateApiScopeTestResource().ToEntity());
                await session.SaveChangesAsync();
             }
 

@@ -5,7 +5,7 @@ namespace IdentityServer4.RavenDB.Storage.Entities
 {
     internal class ApiResource : Resource
     {
-        public List<string> AllowedAccessTokenSigningAlgorithms { get; set; }
+        public string AllowedAccessTokenSigningAlgorithms { get; set; }
         public List<Secret> Secrets { get; set; }
         public List<string> Scopes { get; set; }
         public DateTime Created { get; set; } = DateTime.UtcNow;
