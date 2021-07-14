@@ -39,9 +39,10 @@ namespace IdentityServer4.RavenDB.Storage.Tests.MappersTests
 
             Assert.NotNull(entity.AllowedIdentityTokenSigningAlgorithms);
             Assert.NotEmpty(entity.AllowedIdentityTokenSigningAlgorithms);
-            
-            var algorithmOne = entity.AllowedIdentityTokenSigningAlgorithms.ToList()[0];
-            var algorithmTwo = entity.AllowedIdentityTokenSigningAlgorithms.ToList()[1];
+
+            var algorithms = entity.AllowedIdentityTokenSigningAlgorithms.ToList();
+            var algorithmOne = algorithms[0];
+            var algorithmTwo = algorithms[1];
             
             Assert.Equal("HS256", algorithmOne);
             Assert.Equal("ES256", algorithmTwo);
