@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using AutoMapper;
 using IdentityServer4.Models;
 
 using Client = IdentityServer4.Models.Client;
 using Secret = IdentityServer4.Models.Secret;
 
-[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
     internal class ClientMapperProfile : Profile
@@ -15,7 +13,13 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
         {
             CreateMap<Entities.Client, Client>()
                 .ForMember(dest => dest.ProtocolType, opt => opt.Condition(srs => srs != null))
-                .ReverseMap();
+                .ForMember(x => x.AllowedIdentityTokenSigningAlgorithms,
+                    opt => opt.ConvertUsing(AllowedSigningAlgorithmsConverter.Converter,
+                        x => x.AllowedIdentityTokenSigningAlgorithms))
+                .ReverseMap()
+                .ForMember(x => x.AllowedIdentityTokenSigningAlgorithms,
+                    opt => opt.ConvertUsing(AllowedSigningAlgorithmsConverter.Converter,
+                        x => x.AllowedIdentityTokenSigningAlgorithms));
 
             CreateMap<Entities.ClientClaim, ClientClaim>(MemberList.None)
                 .ReverseMap();

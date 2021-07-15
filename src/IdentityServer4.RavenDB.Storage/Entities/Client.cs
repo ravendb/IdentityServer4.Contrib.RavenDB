@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using IdentityServer4.Models;
 
-[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
     internal class Client
@@ -46,7 +44,7 @@ namespace IdentityServer4.RavenDB.Storage.Entities
         public bool AllowOfflineAccess { get; set; }
         public List<string> AllowedScopes { get; set; }
         public int IdentityTokenLifetime { get; set; } = 300;
-        public List<string> AllowedIdentityTokenSigningAlgorithms { get; set; }
+        public string AllowedIdentityTokenSigningAlgorithms { get; set; }
         public int AccessTokenLifetime { get; set; } = 3600;
         public int AuthorizationCodeLifetime { get; set; } = 300;
         public int? ConsentLifetime { get; set; } = null;

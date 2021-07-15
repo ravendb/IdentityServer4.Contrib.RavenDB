@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
-using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
 using IdentityServer4.RavenDB.Storage.Helpers;
 using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
@@ -11,7 +10,7 @@ using IdentityServer4.Stores;
 using Raven.Client.Documents;
 using Xunit;
 
-namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
+namespace IdentityServer4.RavenDB.Storage.Tests.StoresTests
 {
     public class PersistedGrantStoreTests : IntegrationTestBase
     {
@@ -32,14 +31,14 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task StoreAsync_WhenPersistedGrantStored_ExpectSuccess()
         {
-            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex();
+            var storeHolder = GetOperationalDocumentStoreHolder();
 
             var persistedGrant = CreateTestObject();
 
             var store = new PersistedGrantStore(storeHolder, FakeLogger<PersistedGrantStore>.Create());
             await store.StoreAsync(persistedGrant);
             
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var hashedTokenKey = CryptographyHelper.CreateHash(persistedGrant.Key);
 
@@ -53,7 +52,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task GetAsync_WithKeyAndPersistedGrantExists_ExpectPersistedGrantReturned()
         {
-            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex();
+            var storeHolder = GetOperationalDocumentStoreHolder();
 
             var persistedGrant = CreateTestObject();
             var entity = persistedGrant.ToEntity();
@@ -64,7 +63,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                await session.SaveChangesAsync();
             }
             
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new PersistedGrantStore(storeHolder, FakeLogger<PersistedGrantStore>.Create());
 
@@ -76,7 +75,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task GetAsync_WithSubAndTypeAndPersistedGrantExists_ExpectPersistedGrantReturned()
         {
-            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex();
+            var storeHolder = GetOperationalDocumentStoreHolder();
 
             var persistedGrant = CreateTestObject();
 
@@ -86,7 +85,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                 await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new PersistedGrantStore(storeHolder, FakeLogger<PersistedGrantStore>.Create());
             var filter = new PersistedGrantFilter
@@ -103,7 +102,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task RemoveAsync_WhenKeyOfExistingReceived_ExpectGrantDeleted()
         {
-            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex();
+            var storeHolder = GetOperationalDocumentStoreHolder();
 
             var persistedGrant = CreateTestObject();
 
@@ -127,7 +126,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task RemoveAsync_WhenSubIdAndClientIdOfExistingReceived_ExpectGrantDeleted()
         {
-            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex();
+            var storeHolder = GetOperationalDocumentStoreHolder();
 
             var persistedGrant = CreateTestObject();
 
@@ -137,7 +136,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new PersistedGrantStore(storeHolder, FakeLogger<PersistedGrantStore>.Create());
             var filter = new PersistedGrantFilter
@@ -159,7 +158,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task RemoveAsync_WhenSubIdClientIdAndTypeOfExistingReceived_ExpectGrantDeleted()
         {
-            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex();
+            var storeHolder = GetOperationalDocumentStoreHolder();
 
             var persistedGrant = CreateTestObject();
 
@@ -169,7 +168,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var store = new PersistedGrantStore(storeHolder, FakeLogger<PersistedGrantStore>.Create());
             var filter = new PersistedGrantFilter
@@ -192,7 +191,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task Store_should_create_new_record_if_key_does_not_exist()
         {
-            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex();
+            var storeHolder = GetOperationalDocumentStoreHolder();
 
             var persistedGrant = CreateTestObject();
 
@@ -207,8 +206,8 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
             var store = new PersistedGrantStore(storeHolder, FakeLogger<PersistedGrantStore>.Create());
             await store.StoreAsync(persistedGrant);
             
-            WaitForIndexing(storeHolder.DocumentStore);
-            WaitForUserToContinueTheTest(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
+            WaitForUserToContinueTheTest(storeHolder.IntegrationTest_GetDocumentStore());
 
             using (var session = storeHolder.OpenAsyncSession())
             {
@@ -221,7 +220,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
         [Fact]
         public async Task Store_should_update_record_if_key_already_exists()
         {
-            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex();
+            var storeHolder = GetOperationalDocumentStoreHolder();
 
             var persistedGrant = CreateTestObject();
             var entity = persistedGrant.ToEntity();
@@ -248,60 +247,5 @@ namespace IdentityServer4.RavenDB.IntegrationTests.StoresTests
                 Assert.Equal(newDate, persistedGrant.Expiration);
             }
         }
-        
-        private async Task<OperationalDocumentStoreHolder> GetOperationalDocumentStoreHolder_AndExecutePersistedGrantIndex()
-        {
-            var storeHolder = GetOperationalDocumentStoreHolder();
-            await ExecuteIndex(storeHolder.DocumentStore, new PersistedGrantIndex());
-            return storeHolder;
-        } 
-
-        //[Fact]
-        //public async Task GetAllAsync_is_implemented()
-        //{
-        //    using (var ravenStore = GetDocumentStore())
-        //    {
-        //        var persistedGrant = CreateTestObject();
-
-        //        using (var session = ravenStore.OpenSession())
-        //        {
-        //            session.Store(persistedGrant.ToEntity());
-        //            session.SaveChanges();
-        //        }
-
-        //        var newDate = persistedGrant.Expiration.Value.AddHours(1);
-        //        using (var session = ravenStore.OpenAsyncSession())
-        //        {
-        //            var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
-
-        //            PersistedGrantFilter filter = new PersistedGrantFilter();
-        //            await store.GetAllAsync(filter);
-        //        }
-        //    }
-        //}
-
-        //[Fact]
-        //public async Task RemoveAllAsync_is_implemented()
-        //{
-        //    using (var ravenStore = GetDocumentStore())
-        //    {
-        //        var persistedGrant = CreateTestObject();
-
-        //        using (var session = ravenStore.OpenSession())
-        //        {
-        //            session.Store(persistedGrant.ToEntity());
-        //            session.SaveChanges();
-        //        }
-
-        //        var newDate = persistedGrant.Expiration.Value.AddHours(1);
-        //        using (var session = ravenStore.OpenAsyncSession())
-        //        {
-        //            var store = new PersistedGrantStore(session, FakeLogger<PersistedGrantStore>.Create());
-
-        //            PersistedGrantFilter filter = new PersistedGrantFilter();
-        //            await store.RemoveAllAsync(filter);
-        //        }
-        //    }
-        //}
     }
 }

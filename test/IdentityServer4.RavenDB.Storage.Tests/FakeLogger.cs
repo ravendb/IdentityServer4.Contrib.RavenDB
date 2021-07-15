@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 
-namespace IdentityServer4.RavenDB.IntegrationTests
+namespace IdentityServer4.RavenDB.Storage.Tests
 {
     public class FakeLogger<T> : FakeLogger, ILogger<T>
     {
