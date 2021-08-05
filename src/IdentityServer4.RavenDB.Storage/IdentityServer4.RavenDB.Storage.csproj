@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Version></Version>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageId>RavenDB.Contrib.IdentityServer4</PackageId>
     <Authors>Hibernating Rhinos</Authors>
     <Product>RavenDB.Contrib.IdentityServer4</Product>
+    <Title>RavenDB.Contrib.IdentityServer4</Title>
     <Description>RavenDB persistence layer for IdentityServer4</Description>
     <PackageTags>OAuth2;OAuth 2.0;OpenID Connect;Security;Identity;IdentityServer;RavenDB</PackageTags>
     <PackageProjectUrl>https://github.com/ravendb/IdentityServer4.Contrib.RavenDB</PackageProjectUrl>
@@ -16,10 +18,18 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <IsPackable>True</IsPackable>
 
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageProjectUrl>https://ravendb.net</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="..\..\assets\icon.png" Pack="true" Visible="false" PackagePath="" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.0.0" />
     <PackageReference Include="IdentityServer4" Version="4.1.2" />
