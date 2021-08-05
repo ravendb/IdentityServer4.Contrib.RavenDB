@@ -1,8 +1,6 @@
-﻿using System.Runtime.CompilerServices;
-using AutoMapper;
+﻿using AutoMapper;
 using IdentityServer4.RavenDB.Storage.Entities;
 
-[assembly: InternalsVisibleTo("IdentityServer4.RavenDB.IntegrationTests")]
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
     internal class ApiResourceMapperProfile : Profile
@@ -12,7 +10,11 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
             CreateMap<ApiResource, Models.ApiResource>(MemberList.Destination)
                 .ConstructUsing(src => new Models.ApiResource())
                 .ForMember(x => x.ApiSecrets, opts => opts.MapFrom(x => x.Secrets))
-                .ReverseMap();
+                .ForMember(x => x.AllowedAccessTokenSigningAlgorithms, 
+                    opts => opts.ConvertUsing(AllowedSigningAlgorithmsConverter.Converter, x => x.AllowedAccessTokenSigningAlgorithms))
+                .ReverseMap()
+                .ForMember(x => x.AllowedAccessTokenSigningAlgorithms, 
+                    opts => opts.ConvertUsing(AllowedSigningAlgorithmsConverter.Converter, x => x.AllowedAccessTokenSigningAlgorithms));
 
             CreateMap<Secret, Models.Secret>(MemberList.Destination)
                 .ForMember(dest => dest.Type, opt => opt.Condition(srs => srs != null))

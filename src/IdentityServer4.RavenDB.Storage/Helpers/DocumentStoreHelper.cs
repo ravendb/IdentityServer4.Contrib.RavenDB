@@ -20,7 +20,7 @@ namespace IdentityServer4.RavenDB.Storage.Helpers
 
             if (urls.Length == 0)
             {
-                throw new InvalidOperationException($"{nameof(documentStore.Urls)} must be provided when setting up Identity Server configuration and operational RavenDb stores.");
+                throw new InvalidOperationException($"{nameof(documentStore.Urls)} cannot be empty when setting up Identity Server configuration and operational RavenDb stores.");
             }
 
             if (documentStore.Certificate != null)

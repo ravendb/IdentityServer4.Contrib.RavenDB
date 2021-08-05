@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
-using IdentityServer4.RavenDB.Storage.DocumentStoreHolder;
-using IdentityServer4.RavenDB.Storage.Indexes;
 using IdentityServer4.RavenDB.Storage.Mappers;
 using IdentityServer4.RavenDB.Storage.Services;
 using Xunit;
 
-namespace IdentityServer4.RavenDB.IntegrationTests.ServicesTests
+namespace IdentityServer4.RavenDB.Storage.Tests.ServicesTests
 {
     public class CorsPolicyServiceTests : IntegrationTestBase
     {
@@ -17,7 +15,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.ServicesTests
         {
             const string testCorsOrigin = "https://identityserver.io/";
 
-            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteClientIndex();
+            var storeHolder = GetConfigurationDocumentStoreHolder();
 
             using (var session = storeHolder.OpenAsyncSession())
             {
@@ -37,8 +35,8 @@ namespace IdentityServer4.RavenDB.IntegrationTests.ServicesTests
 
                 await session.SaveChangesAsync();
             }
-
-            WaitForIndexing(storeHolder.DocumentStore);
+            
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var service = new CorsPolicyService(storeHolder, FakeLogger<CorsPolicyService>.Create());
             var result = await service.IsOriginAllowedAsync(testCorsOrigin.ToUpperInvariant());
@@ -49,7 +47,7 @@ namespace IdentityServer4.RavenDB.IntegrationTests.ServicesTests
         [Fact]
         public async Task IsOriginAllowedAsync_WhenOriginIsNotAllowed_ExpectFalse()
         {
-            var storeHolder = await GetOperationalDocumentStoreHolder_AndExecuteClientIndex();
+            var storeHolder = GetConfigurationDocumentStoreHolder();
 
             using (var session = storeHolder.OpenAsyncSession())
             {
@@ -63,19 +61,12 @@ namespace IdentityServer4.RavenDB.IntegrationTests.ServicesTests
                 await session.SaveChangesAsync();
             }
 
-            WaitForIndexing(storeHolder.DocumentStore);
+            WaitForIndexing(storeHolder.IntegrationTest_GetDocumentStore());
 
             var service = new CorsPolicyService(storeHolder, FakeLogger<CorsPolicyService>.Create());
             var result = await service.IsOriginAllowedAsync("InvalidOrigin");
 
             Assert.False(result);
-        }
-        
-        private async Task<ConfigurationDocumentStoreHolder> GetOperationalDocumentStoreHolder_AndExecuteClientIndex()
-        {
-            var storeHolder = GetConfigurationDocumentStoreHolder();
-            await ExecuteIndex(storeHolder.DocumentStore, new ClientIndex());
-            return storeHolder;
         }
     }
 }
