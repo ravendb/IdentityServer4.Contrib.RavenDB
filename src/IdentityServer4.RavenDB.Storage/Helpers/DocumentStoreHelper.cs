@@ -23,6 +23,14 @@ namespace IdentityServer4.RavenDB.Storage.Helpers
                 throw new InvalidOperationException($"{nameof(documentStore.Urls)} cannot be empty when setting up Identity Server configuration and operational RavenDb stores.");
             }
 
+            if (documentStore.Certificate != null)
+            {
+                documentStore.AfterDispose += (sender, args) =>
+                {
+                    documentStore.Certificate.Dispose();
+                };
+            }
+            
             documentStore.Initialize();
 
             return documentStore;
