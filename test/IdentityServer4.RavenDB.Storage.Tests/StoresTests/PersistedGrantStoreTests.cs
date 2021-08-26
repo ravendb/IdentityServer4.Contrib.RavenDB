@@ -67,7 +67,7 @@ namespace IdentityServer4.RavenDB.Storage.Tests.StoresTests
 
             var store = new PersistedGrantStore(storeHolder, FakeLogger<PersistedGrantStore>.Create());
 
-            var foundPersistedGrant = await store.GetAsync(entity.Key);
+            var foundPersistedGrant = await store.GetAsync(persistedGrant.Key);
 
             Assert.NotNull(foundPersistedGrant);
         }
