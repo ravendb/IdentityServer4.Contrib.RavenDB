@@ -7,7 +7,7 @@ namespace IdentityServer4.RavenDB.Storage.Entities
     /// Models the common data of API and identity resources.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    internal abstract class Resource
+    public abstract class Resource
     {
         private string name;
 

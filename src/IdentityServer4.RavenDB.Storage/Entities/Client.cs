@@ -4,7 +4,7 @@ using IdentityServer4.Models;
 
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    internal class Client
+    public sealed class Client
     {
         private string clientId;
         public string Id { get; set; }

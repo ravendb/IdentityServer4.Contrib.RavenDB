@@ -2,7 +2,7 @@
 
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    internal class PersistedGrant
+    public sealed class PersistedGrant
     {
         public string Id { get; set; }
         

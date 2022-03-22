@@ -2,10 +2,10 @@
 
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
-    internal static class ClientMappers
+    public static class ClientMappers
     {
         private static readonly IMapper _mapper;
-        
+
         static ClientMappers()
         {
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<ClientMapperProfile>())

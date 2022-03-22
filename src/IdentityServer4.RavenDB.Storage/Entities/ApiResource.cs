@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    internal class ApiResource : Resource
+    public sealed class ApiResource : Resource
     {
         public string AllowedAccessTokenSigningAlgorithms { get; set; }
         public List<Secret> Secrets { get; set; }

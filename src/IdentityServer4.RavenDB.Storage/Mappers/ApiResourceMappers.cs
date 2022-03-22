@@ -3,10 +3,10 @@ using IdentityServer4.RavenDB.Storage.Entities;
 
 namespace IdentityServer4.RavenDB.Storage.Mappers
 {
-    internal static class ApiResourceMappers
+    public static class ApiResourceMappers
     {
         private static readonly IMapper _mapper;
-        
+
         static ApiResourceMappers()
         {
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<ApiResourceMapperProfile>())

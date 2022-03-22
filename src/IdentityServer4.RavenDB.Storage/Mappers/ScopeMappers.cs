@@ -6,10 +6,10 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
     /// <summary>
     /// Extension methods to map to/from entity/model for scopes.
     /// </summary>
-    internal static class ScopeMappers
+    public static class ScopeMappers
     {
         private static readonly IMapper _mapper;
-        
+
         static ScopeMappers()
         {
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<ScopeMapperProfile>())

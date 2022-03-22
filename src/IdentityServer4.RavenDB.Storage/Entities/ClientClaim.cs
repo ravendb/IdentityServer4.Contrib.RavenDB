@@ -2,7 +2,7 @@
 
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    internal class ClientClaim
+    public sealed class ClientClaim
     {
         public string Type { get; set; }
 
