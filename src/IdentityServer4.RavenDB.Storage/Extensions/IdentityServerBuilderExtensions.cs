@@ -14,7 +14,7 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
             this IIdentityServerBuilder builder, Action<RavenDbConfigurationStoreOptions> configureStoreOptions)
         {
             builder.Services.AddConfigurationDocumentStoreHolder(configureStoreOptions);
-            
+
             builder.AddClientStore<ClientStore>();
             builder.AddResourceStore<ResourceStore>();
             builder.AddCorsPolicyService<CorsPolicyService>();
@@ -26,7 +26,7 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
             this IIdentityServerBuilder builder)
         {
             CheckAddConfigurationStoreHolderWasCalled(builder.Services);
-            
+
             builder.AddInMemoryCaching();
 
             builder.AddClientStoreCache<ClientStore>();
@@ -39,7 +39,7 @@ namespace IdentityServer4.RavenDB.Storage.Extensions
         public static IIdentityServerBuilder AddRavenDbOperationalStore(this IIdentityServerBuilder builder, Action<RavenDbOperationalStoreOptions> configureStoreOptions)
         {
             builder.Services.AddOperationalDocumentStoreHolder(configureStoreOptions);
-            
+
             builder.AddPersistedGrantStore<PersistedGrantStore>();
             builder.AddDeviceFlowStore<DeviceFlowStore>();
             return builder;
