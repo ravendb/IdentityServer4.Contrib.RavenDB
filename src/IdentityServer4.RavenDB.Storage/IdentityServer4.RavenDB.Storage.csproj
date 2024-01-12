@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Version>1.0.0</Version>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PackageId>RavenDB.Contrib.IdentityServer4</PackageId>
     <Authors>Hibernating Rhinos</Authors>
     <Product>RavenDB.Contrib.IdentityServer4</Product>
@@ -36,6 +36,7 @@
     <PackageReference Include="IdentityServer4.Storage" Version="4.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.8" />
     <PackageReference Include="RavenDB.Client" Version="4.2.115" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
