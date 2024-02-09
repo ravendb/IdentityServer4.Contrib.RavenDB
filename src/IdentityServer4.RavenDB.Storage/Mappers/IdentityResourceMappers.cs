@@ -6,10 +6,10 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
     /// <summary>
     /// Extension methods to map to/from entity/model for identity resources.
     /// </summary>
-    internal static class IdentityResourceMappers
+    public static class IdentityResourceMappers
     {
         private static readonly IMapper _mapper;
-        
+
         static IdentityResourceMappers()
         {
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<IdentityResourceMapperProfile>())

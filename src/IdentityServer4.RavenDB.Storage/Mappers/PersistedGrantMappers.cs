@@ -6,10 +6,10 @@ namespace IdentityServer4.RavenDB.Storage.Mappers
     /// <summary>
     /// Extension methods to map to/from entity/model for persisted grants.
     /// </summary>
-    internal static class PersistedGrantMappers
+    public static class PersistedGrantMappers
     {
         private static readonly IMapper _mapper;
-        
+
         static PersistedGrantMappers()
         {
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<PersistedGrantMapperProfile>())

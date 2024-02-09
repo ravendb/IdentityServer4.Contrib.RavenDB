@@ -2,7 +2,7 @@
 
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    internal class IdentityResource : Resource
+    public sealed class IdentityResource : Resource
     {
         public bool Required { get; set; }
 

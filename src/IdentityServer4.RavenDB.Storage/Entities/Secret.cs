@@ -2,7 +2,7 @@
 
 namespace IdentityServer4.RavenDB.Storage.Entities
 {
-    internal class Secret
+    public sealed class Secret
     {
         public string Description { get; set; }
 
