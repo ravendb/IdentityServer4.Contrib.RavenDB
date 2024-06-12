@@ -76,8 +76,10 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             using (var session = OpenAsyncSession())
             {
+                var hashedTokenKey = CryptographyHelper.CreateHash(key);
+                
                 var persistedGrant = await session.Query<Entities.PersistedGrant, PersistedGrantIndex>()
-                    .FirstOrDefaultAsync(x => x.Key == key);
+                    .FirstOrDefaultAsync(x => x.Key == hashedTokenKey);
 
                 var model = persistedGrant?.ToModel();
 
@@ -109,8 +111,10 @@ namespace IdentityServer4.RavenDB.Storage.Stores
         {
             using (var session = OpenAsyncSession())
             {
+                var hashedTokenKey = CryptographyHelper.CreateHash(key);
+                
                 var persistedGrant = await session.Query<Entities.PersistedGrant, PersistedGrantIndex>()
-                    .FirstOrDefaultAsync(x => x.Key == key);
+                    .FirstOrDefaultAsync(x => x.Key == hashedTokenKey);
 
                 if (persistedGrant != null)
                 {
